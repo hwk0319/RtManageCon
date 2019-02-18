@@ -1,0 +1,70 @@
+#!/bin/bash
+#this script start local crs
+#===========================log=========================
+dirName=$(cd "$(dirname "$0")"; pwd)
+logFileName=$(date +'%Y-%m-%d-%H-%M-%S')
+logFile=${dirName}/start2-startcrs_${logFileName}.log
+exec 3>&1 4>&2 &> ${logFile} 2>&1
+#===========================log=========================
+
+
+if [ $(id -u) != "0" ]; then
+    echo "You must be the superuser to run this script" >&2
+	sh /root/return/task/commScript/callback/callTaskManager.sh  3 "${taskId}" "${stepId}" 0 "you must be root user to run this task."
+    exit 1
+fi
+
+GETLOG(){
+errmsg=`cat ./err.log`
+sucmsg=`cat ./suc.log`
+}
+
+timestamp=$(date +'%Y-%m-%d %H:%M:%S')
+echo $timestamp >  temp.log
+
+#source ${1}
+hostFlag=$(hostname)
+echo "hostflag="$hostFlag >> temp.log
+hostName=$(hostname)
+echo "hostname="$hostName >> temp.log
+taskId=${2}
+echo "task id="$taskId >> temp.log
+stepId=${3}
+echo $"step id"=stepId >> temp.log
+
+
+
+INSTNAME1=`ps -ef|grep pmon|grep -v grep|grep oracle|grep -v ASM|awk '{print $8}'|cut -b 10-`
+DBNAME=${INSTNAME1%?}
+
+
+num=`ps -ef|grep pmon|grep -v grep|grep oracle|grep -v ASM|wc -l`
+
+if [ $num = 0 ];
+then
+	sh /root/return/task/commScript/callback/callLogManager.sh  "error" "${taskId}" "${stepId}"  "NODE $(hostName) CRS STARTING."
+	sh /root/return/task/commScript/callback/callTaskManager.sh  1 "${taskId}" "${stepId}" 10 "NODE $(hostName) CRS STARTING." 
+
+crsctl sotp crs 1>./suc.log 2>./err.log
+ if [ $? = 0 ]
+ then
+ sh /root/return/task/commScript/callback/callLogManager.sh "info" "${taskId}" "${stepId}"  "NODE $(hostName) STARTED SUCCESS."
+ sh /root/return/task/commScript/callback/callTaskManager.sh  2 "${taskId}" "${stepId}" 100 "NODE $(hostName) STARTED SUCCESS."
+ else
+ GETLOG
+ msgDtial=$errmsg
+ sh /root/return/task/commScript/callback/callLogManager.sh "error" "${taskId}" "${stepId}"  "${msgDtial}"
+ sh /root/return/task/commScript/callback/callTaskManager.sh 3 "${taskId}" "${stepId}" 10 "NODE $(hostName) CRS START FAIL."
+
+ fi
+else 
+ sh /root/return/task/commScript/callback/callLogManager.sh "error" "${taskId}" "${stepId}"  'database is already runing'
+ sh /root/return/task/commScript/callback/callTaskManager.sh  3 "${taskId}" "${stepId}" 10 'database is already runing' 
+exit 1
+fi
+
+
+
+
+
+

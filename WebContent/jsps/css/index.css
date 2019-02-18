@@ -1,0 +1,159 @@
+html, body{
+	height:100%;
+	overflow: hidden;
+	margin: 0;
+	font-family:Microsoft YaHei;
+}
+div{
+	position: relative;
+}
+#commHead{
+	height: 50px;
+	width: 100%;
+	background-color:#3C8DBC;
+	overflow: hidden;
+}
+.head_left{
+	display:inline;
+	float: left;
+	width: 230px;
+	height: 100%;
+	background:url(../../imgs/SGlogo.png)no-repeat 25px 5px;
+	background-color:#357CA5;
+}
+#head_right{
+	display:inline;
+	color: #FFFFFF;
+	width:calc(100% - 230px);
+	overflow: hidden;
+}
+.head_title{
+	margin-left:10px;
+	line-height:50px;
+	font-size: 20px;
+	font-weight: bold;
+}
+.font_style{
+	color:#ffffff;
+	line-height:50px;
+	font-family:Microsoft YaHei;
+	font-size:14px;
+}
+#comm_menu{
+	float:left;
+	width: 230px;
+	height: calc(100% - 50px);
+	overflow: hidden; 
+	background-color:#222D32;
+	overflow-y:auto;
+}
+#note a{
+	float:left;
+}
+#tt{
+	float:left;
+	width:calc(100% - 230px);
+}
+.sysmenu{
+	width: 230px;
+	height: 60px;
+	line-height: 60px;
+	cursor: pointer;
+	margin-top: 3px;
+	padding-left:40px;
+	font-size: 16px;
+	color:#fff;
+}
+.sysmenu:hover {
+  border-left:3px solid #1b78c3;
+  padding-left:37px;
+  background-color:#151A1C;
+}
+.sysmenu_click{
+  border-left:3px solid #1b78c3;
+  padding-left:37px;
+  background-color: #151A1C;
+}
+.sysmenu a{
+	padding-left:20px;
+	color:#fff;
+}
+.sysmenu img{
+	vertical-align:middle;
+}
+.submenu div{
+	width: 230px;
+	height: 50px; 
+	line-height: 50px;
+	text-align: left;
+	cursor: pointer;
+	display: none;
+    font-size: 14px;
+    font-weight: 300;
+    padding-left: 95px;
+    color:#fff;
+}
+.submenu div:hover {
+	background-color: #3c8dbc;
+}
+.submenu_click{
+	background-color: #3c8dbc;
+}
+#home_bg{
+	background-image:url(../../imgs/home_bg.png);
+	background-size:100% 100%;
+	background-repeat:no-repeat;
+}
+#home_tp{
+	background-image:url(../../imgs/home_tp.png);
+	background-size:100%;
+	background-repeat:no-repeat;
+}
+.little_div{
+	border-radius:11px;
+	width:90px;
+	background-color:#34A8FB;
+	text-align:center;
+	float:left;
+}
+.little_div_two{
+	width:140px;
+	float:left;
+}
+.font_one{
+	font-size:15px;
+	color:#ffffff;
+	line-height:38px;
+}
+.font_two{
+	font-size:15px;
+	line-height:38px;
+	color:#2E75AE;
+	font-weight:bold;
+}
+
+*::-webkit-scrollbar-track
+{
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  background-color: #F5F5F5;
+}
+
+*::-webkit-scrollbar
+{
+  width: 5px;
+  background-color: #F5F5F5;
+}
+
+*::-webkit-scrollbar-thumb
+{
+   background-color: #c1c1c1;
+}
+/* 输入框placeholder文字默认颜色*/
+::-webkit-input-placeholder { /* WebKit browsers */  
+	color:    #ccc;  
+	font-size: 14px;
+}  
+:-ms-input-placeholder { /* Internet Explorer 10+ */  
+    color:    #ccc;  
+    font-size: 14px;
+}

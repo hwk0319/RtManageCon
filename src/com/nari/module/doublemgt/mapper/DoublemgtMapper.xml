@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.module.doublemgt.dao.DoublemgtDao">
+
+	<select id="search" parameterType="DoublemgtPo"  resultType="DoublemgtPo">
+		select * from mgt_double where 1=1 and use_flag = '1'
+		<if test="po.id != null and po.id != '' "> and id = #{po.id}</if>
+		<if test="po.name != null and po.name != '' "> and name like concat(concat('%',#{po.name}),'%')</if>
+		<if test="po.doubtype != null and po.doubtype != ''" >and doubtype= #{po.doubtype}</if>
+		<if test="po.position != null and po.position != '' "> and position = #{po.position}</if>
+		<if test="po.group_id != null and po.group_id != ''" >and id in (select double_id from mgt_double_group where group_id=#{po.group_id})</if>
+		order by id asc
+	</select>
+	<select id="search_group_core" parameterType="DoublemgtPo"  resultType="DoublemgtPo">
+		select
+		 A.id as core_id,
+		 A.core, 
+		 A.core_tagging ,
+		 C.group_id,
+		 D.name as group_name ,
+		 D.description as group_description ,
+		 D.grotype 
+		 from mgt_core A
+		left join mgt_core_group C
+		on A.id=C.core_id
+		left join mgt_group D
+		on D.id=C.group_id
+		where A.use_flag='1'
+		<if test="po.double_id != null and po.double_id != '' "> and  A.double_id=#{po.double_id}</if>
+	</select>
+	<insert id="insert"  parameterType="DoublemgtPo">
+	 insert into mgt_double(
+             name, description, doubtype,use_flag, create_by, create_date, position)
+     values (#{po.name,jdbcType=VARCHAR}, #{po.description,jdbcType=VARCHAR},#{po.doubtype,jdbcType=INTEGER} ,'1', #{po.create_by}, #{po.create_date},#{po.position,jdbcType=VARCHAR})
+         <selectKey order="AFTER" resultType="java.lang.Integer" keyProperty="po.id">
+             <choose>
+		        <when  test="po.DBTYPE =='ORACLE'">SELECT mgt_double_id_seq.NEXTVAL-1 from DUAL</when>
+		        <otherwise>select last_value from mgt_double_id_seq</otherwise>
+	     	 </choose>
+        </selectKey> 
+	</insert>	
+	
+	
+	<insert id="insertcore"  parameterType="CorePo" >
+	 insert into mgt_core(
+             core, double_id, core_tagging,use_flag, create_by, create_date)
+     values (#{po.core,jdbcType=VARCHAR}, #{po.double_id,jdbcType=INTEGER},#{po.core_tagging,jdbcType=VARCHAR} ,'1', #{po.create_by,jdbcType=VARCHAR}, #{po.create_date})
+     <selectKey order="AFTER" resultType="java.lang.Integer" keyProperty="po.id">
+             <choose>
+		        <when  test="po.DBTYPE =='ORACLE'">SELECT mgt_core_id_seq.NEXTVAL-1 from DUAL</when>
+		        <otherwise>select last_value from mgt_core_id_seq</otherwise>
+	     	 </choose>
+        </selectKey> 
+	</insert>	
+	
+	<update id="updatecore"  parameterType="CorePo">
+	update mgt_core
+	set 
+		core=#{po.core,jdbcType=VARCHAR},
+		update_by=#{po.update_by,jdbcType=VARCHAR}, 
+		update_date=#{po.update_date}
+	where 
+		id=#{po.id}
+	</update>
+	
+	
+	 <update id="deletegroup"  parameterType="CorePo">
+	 delete from mgt_core_group 
+	 where core_id in(#{po.id})
+	</update> 
+	
+	
+	<insert id="insertcoreGroup"  parameterType="CorePo">
+	 insert into mgt_core_group(group_id,core_id, use_flag, create_by, create_date)
+     values (#{po.group_id,jdbcType=INTEGER},#{po.id}, '1', #{po.create_by,jdbcType=VARCHAR}, #{po.create_date})
+	</insert>	
+	
+	<update id="update"  parameterType="DoublemgtPo">
+	update mgt_double
+	set 
+		name=#{po.name,jdbcType=VARCHAR},
+		doubtype=#{po.doubtype,jdbcType=INTEGER},
+		description=#{po.description,jdbcType=VARCHAR},  
+		update_by=#{po.update_by,jdbcType=VARCHAR}, 
+		update_date= #{po.update_date}
+	where 
+		id=#{po.id}
+	</update>
+	<update id="deletecore"  parameterType="DoublemgtPo">
+		update mgt_core 
+		 set 
+			use_flag = '0',
+			update_by=#{po.update_by,jdbcType=VARCHAR},
+			update_date=#{po.update_date}
+		 where double_id in (#{po.id})
+	</update>
+	<update id="deletecoregroup"  parameterType="DoublemgtPo">
+	update mgt_core_group
+	 set 
+		use_flag = '0',
+		update_by=#{po.update_by},
+		update_date=#{po.update_date}
+	 where core_id in (select id from mgt_core where double_id =#{po.id})
+	</update>
+	<update id="delete"  parameterType="DoublemgtPo">
+	 update mgt_double 
+	 set 
+		use_flag = '0',
+		update_by=#{po.update_by},
+		update_date=#{po.update_date}
+	 where id in (#{po.id})
+	</update>
+
+</mapper>

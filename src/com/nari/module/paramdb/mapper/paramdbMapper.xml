@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.module.paramdb.dao.paramdbDao">
+	<select id="searchOrcl" parameterType="paramdbPo" resultType="paramdbPo">
+		select max(case index_id when 2010000 then value else '' end) Connect_failed,
+		max(case index_id when 2010001 then value else '' end) cpu_usage,
+		max(case index_id when 2010002 then value else '' end) instance_state,
+		max(case index_id when 2010003 then value else '' end) session_num,
+		max(case index_id when 2010004 then value else '' end) SGA_hit,
+		max(case index_id when 2010005 then value else '' end) user_time,
+		max(case index_id when 2010006 then value else '' end) system_time,
+		max(case index_id when 2010007 then value else '' end) iops,
+		max(case index_id when 2010008 then value else '' end) io_speed,
+		max(case index_id when 2010009 then value else '' end) Memery_usage_percent,
+		max(case index_id when 2010010 then value else '' end) Response_Time,
+		max(case index_id when 2010011 then value else '' end) Idle_Time,
+		max(case index_id when 2010012 then value else '' end) PGA_hit,
+		max(case index_id when 2010013 then value else '' end) DB_cache_match,
+		max(case index_id when 2010014 then value else '' end) share_pool_match,
+		reserver1,ip
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">
+		        from mon_indexdata right join mgt_system on mgt_system."UID"=mon_indexdata."UID" 
+		        where mgt_system."UID"=#{po.uid}
+	        </when>
+	        <otherwise>
+	        	from mon_indexdata right join mgt_system on mgt_system.uid=mon_indexdata.uid 
+		        where mgt_system.uid=#{po.uid}
+			</otherwise>
+	    </choose>
+		group by reserver1,ip
+	</select>
+
+	<select id="searchOrcl1" parameterType="paramdbPo" resultType="paramdbPo">
+		select max(case index_id when 2010101 then value else '' end) table_name,
+		max(case index_id when 2010102 then value else '' end) table_type,
+		max(case index_id when 2010103 then value else '' end) sum_space,
+		max(case index_id when 2010104 then value else '' end) sum_blocks,
+		max(case index_id when 2010105 then value else '' end) used_space,
+		max(case index_id when 2010106 then value else '' end) used_rate,
+		max(case index_id when 2010107 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose>
+		union 
+		select max(case index_id when 2010111 then value else '' end) table_name,
+		max(case index_id when 2010112 then value else '' end) table_type,
+		max(case index_id when 2010113 then value else '' end) sum_space,
+		max(case index_id when 2010114 then value else '' end) sum_blocks,
+		max(case index_id when 2010115 then value else '' end) used_space,
+		max(case index_id when 2010116 then value else '' end) used_rate,
+		max(case index_id when 2010117 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose>
+		union 
+		select max(case index_id when 2010121 then value else '' end) table_name,
+		max(case index_id when 2010122 then value else '' end) table_type,
+		max(case index_id when 2010123 then value else '' end) sum_space,
+		max(case index_id when 2010124 then value else '' end) sum_blocks,
+		max(case index_id when 2010125 then value else '' end) used_space,
+		max(case index_id when 2010126 then value else '' end) used_rate,
+		max(case index_id when 2010127 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose>
+		union 
+		select max(case index_id when 2010131 then value else '' end) table_name,
+		max(case index_id when 2010132 then value else '' end) table_type,
+		max(case index_id when 2010133 then value else '' end) sum_space,
+		max(case index_id when 2010134 then value else '' end) sum_blocks,
+		max(case index_id when 2010135 then value else '' end) used_space,
+		max(case index_id when 2010136 then value else '' end) used_rate,
+		max(case index_id when 2010137 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose> 
+		union 
+		select max(case index_id when 2010141 then value else '' end) table_name,
+		max(case index_id when 2010142 then value else '' end) table_type,
+		max(case index_id when 2010143 then value else '' end) sum_space,
+		max(case index_id when 2010144 then value else '' end) sum_blocks,
+		max(case index_id when 2010145 then value else '' end) used_space,
+		max(case index_id when 2010146 then value else '' end) used_rate,
+		max(case index_id when 2010147 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose>
+		union 
+		select max(case index_id when 2010151 then value else '' end) table_name,
+		max(case index_id when 2010152 then value else '' end) table_type,
+		max(case index_id when 2010153 then value else '' end) sum_space,
+		max(case index_id when 2010154 then value else '' end) sum_blocks,
+		max(case index_id when 2010155 then value else '' end) used_space,
+		max(case index_id when 2010156 then value else '' end) used_rate,
+		max(case index_id when 2010157 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose>
+		union 
+		select max(case index_id when 2010161 then value else '' end) table_name,
+		max(case index_id when 2010162 then value else '' end) table_type,
+		max(case index_id when 2010163 then value else '' end) sum_space,
+		max(case index_id when 2010164 then value else '' end) sum_blocks,
+		max(case index_id when 2010165 then value else '' end) used_space,
+		max(case index_id when 2010166 then value else '' end) used_rate,
+		max(case index_id when 2010167 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose>
+		union 
+		select max(case index_id when 2010171 then value else '' end) table_name,
+		max(case index_id when 2010172 then value else '' end) table_type,
+		max(case index_id when 2010173 then value else '' end) sum_space,
+		max(case index_id when 2010174 then value else '' end) sum_blocks,
+		max(case index_id when 2010175 then value else '' end) used_space,
+		max(case index_id when 2010176 then value else '' end) used_rate,
+		max(case index_id when 2010177 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose>
+		union 
+		select max(case index_id when 2010181 then value else '' end) table_name,
+		max(case index_id when 2010182 then value else '' end) table_type,
+		max(case index_id when 2010183 then value else '' end) sum_space,
+		max(case index_id when 2010184 then value else '' end) sum_blocks,
+		max(case index_id when 2010185 then value else '' end) used_space,
+		max(case index_id when 2010186 then value else '' end) used_rate,
+		max(case index_id when 2010187 then value else '' end) free_space
+		from mon_indexdata where 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">"UID"=#{po.uid}</when>
+	        <otherwise>uid=#{po.uid}</otherwise>
+	    </choose>
+	</select>
+
+	<select id="searchMysql" parameterType="paramdbPo" resultType="paramdbPo">
+		select max(case index_id when 2020000 then value else '' end) Connect_failed,
+		max(case index_id when 2020001 then value else '' end) capacity_used,
+		max(case index_id when 2020002 then value else '' end) session_num,
+		max(case index_id when 2020003 then value else '' end) system_time,
+		max(case index_id when 2020004 then value else '' end) TPS,
+		max(case index_id when 2020005 then value else '' end) QPS,
+		name,ip
+		from mon_indexdata right join mgt_system on 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">mgt_system."UID"=mon_indexdata."UID" where  mgt_system."UID"=#{po.uid}</when>
+	        <otherwise>mgt_system.uid=mon_indexdata.uid where  mgt_system.uid=#{po.uid}</otherwise>
+	    </choose>
+		group by name,ip
+	</select>
+   
+	<select id="searchDataList" parameterType="paramdbPo" resultType="paramdbPo">
+		select * from mgt_system ms
+		inner join mon_deviceindex md on ms."UID" = md."UID" and md.use_flag = '1'
+		 where ms.systype = 1
+		   and ms.use_flag = '1'
+		   and ms.type = '1'
+		   <if test="po.position != null and po.position != '' ">and ms.position = #{po.position}</if>
+	       <if test="po.searchText != null and po.searchText != ''">and ms.name like concat(concat('%',#{po.searchText}),'%')</if>
+		 order by ms.id desc
+   </select>
+   
+	<select id="searchDataNum" parameterType="paramdbPo" resultType="paramdbPo">
+      select * from mgt_system
+      where systype = 1
+        and use_flag = '1'
+        and type = '1'
+	  order by "ID"
+   </select>
+   
+	<select id="searchDataError" parameterType="paramdbPo" resultType="paramdbPo">
+		select count(1) num from mon_warn_log
+	    where device_id in 
+	         (select ms."UID" from mgt_system ms
+	          inner join mon_deviceindex md on ms."UID" = md."UID" and md.use_flag = '1'
+		        where ms.systype = 1
+		        <if test="po.position != null and po.position != '' ">and ms.position = #{po.position}</if>
+	        	<if test="po.searchText != null and po.searchText != ''">and ms.name like concat(concat('%',#{po.searchText}),'%')</if>
+		        )
+   </select>
+   
+	<select id="searchMgtSystem" parameterType="paramdbPo" resultType="paramdbPo">
+      select type,"UID" from mgt_system where "UID" = #{po.uid}
+   </select>
+   
+	<select id="searchMgtSystems" parameterType="paramdbPo" resultType="paramdbPo">
+      select type,"UID",name from mgt_system where "UID" = #{po.uid}
+   </select>
+   
+	<select id="searchMonindexdata" parameterType="paramdbPo" resultType="paramdbPo">
+      select * from mon_indexdata where "UID" = #{po.uid}
+   </select>
+   
+	<select id="searchMgtdevice" parameterType="paramdbPo" resultType="paramdbPo">
+      select "ID", "UID", in_ip as ip, name
+		  from mgt_device
+		 where use_flag = '1'
+		   and "ID" in (select dev_id from mgt_system_device
+		                 where use_flag = '1'
+		                   and sys_id = 
+		                   (select "ID" from mgt_system
+		                      where use_flag = '1'
+		                      and "UID" = #{po.uid})
+		                )
+   </select>
+   
+	<select id="searchTrend" parameterType="paramdbPo" resultType="paramdbPo">
+        select sum(value)/count(1) as value,'0' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'1' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'2' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'3' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'4' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'5' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'6' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'7' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'8' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'9' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'10' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'11' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'12' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'13' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'14' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'15' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'16' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'17' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'18' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'19' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'20' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'21' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'22' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS')  
+		union select sum(value)/count(1) as value,'23' as num from  mon_indexdata_his  where "UID" = #{po.uid} and index_id = #{po.index_id}  and record_time between to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') and to_timestamp(#{po.record_time},'yyyy-mm-dd HH24:MI:SS') 
+   </select>
+</mapper>

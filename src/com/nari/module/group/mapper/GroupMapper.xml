@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.module.group.dao.GroupDao">
+
+	<select id="search" parameterType="GroupPo"  resultType="GroupPo">
+		<if test="po.DBTYPE =='ORACLE'" >
+			select mgt_group.id,mgt_group."UID",mgt_group.name,mgt_group.description,mgt_group.grotype,mgt_group.grouptype,a.name as grotypeName,b.name as grouptypeName,mgt_group.position
+			from mgt_group 
+			left join mgt_group_dev_sys on mgt_group.id = mgt_group_dev_sys.group_id and mgt_group_dev_sys.use_flag = '1'
+			left join mgt_device on mgt_device.id = mgt_group_dev_sys.dev_id and mgt_device.use_flag = '1'
+			left join sys_dict a on to_number(a.value,'9') = mgt_group.grotype and a.type='group_type'
+			left join sys_dict b on to_number(b.value,'9') = mgt_group.grouptype and b.type='grouptype'
+			where 1=1 
+			and mgt_group.use_flag = '1' 
+			<if test="po.uid != null and po.uid != ''" >and mgt_group."UID" like concat(concat('%',#{po.uid}),'%')</if>
+			<if test="po.grotypeName != null and po.grotypeName != ''" >and mgt_group.name like concat(concat('%',#{po.grotypeName}),'%')</if>
+			<if test="po.grotype != null and po.grotype != ''" >and mgt_group.grotype = #{po.grotype}</if>
+		</if>
+		<if test="po.DBTYPE =='POSTGRES'" >
+			select mgt_group.id,mgt_group.uid,mgt_group.name,mgt_group.description,mgt_group.grotype,mgt_group.grouptype,a.name as grotypeName,b.name as grouptypeName,mgt_group.position
+			from mgt_group 
+			left join mgt_group_dev_sys on mgt_group.id = mgt_group_dev_sys.group_id
+			left join mgt_device on mgt_device.id = mgt_group_dev_sys.dev_id and mgt_device.use_flag = '1'
+			left join sys_dict a on to_number(a.value,'9') = mgt_group.grotype and a.type='group_type'
+			left join sys_dict b on to_number(b.value,'9') = mgt_group.grouptype and b.type='grouptype'
+			where 1=1 
+			and mgt_group.use_flag = '1' 
+			<if test="po.uid != null and po.uid != ''" >and mgt_group.uid like concat(concat('%',#{po.uid}),'%')</if>
+		</if>
+		<if test="po.id != null and po.id != '' "> and mgt_group.id = #{po.id}</if>
+		<if test="po.name != null and po.name != '' "> and mgt_device.name like concat(concat('%',#{po.name}),'%')</if>
+		<if test="po.in_ip != null and po.in_ip != '' "> and mgt_device.in_ip like concat(concat('%',#{po.in_ip}),'%')</if>
+		<if test="po.idList != null">
+			and mgt_group.id not in
+			<foreach collection="po.idList" index="index" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="po.double_id != null and po.double_id != ''" > and mgt_group.id in (select group_id from mgt_double_group where double_id=#{po.double_id})</if>
+		<if test="po.cluster_id != null and po.cluster_id != ''" > and mgt_group.id in (select group_id from mgt_cluster_group where cluster_id=#{po.cluster_id})</if>
+		<if test="po.integrate_id != null and po.integrate_id != ''" > and mgt_group.id in (select group_id from mgt_integrate_group where integrate_id=#{po.integrate_id})</if>
+		<if test="po.position != null and po.position != '' "> and mgt_group.position = #{po.position}</if>
+		
+		<if test="po.DBTYPE =='ORACLE'" >
+		group by mgt_group.id,mgt_group."UID",mgt_group.name,mgt_group.description,mgt_group.grotype,mgt_group.grouptype,a.name,b.name,mgt_group.position
+		order by mgt_group.id asc
+		</if>
+		<if test="po.DBTYPE =='POSTGRES'" >
+		group by mgt_group.id,mgt_group.uid,mgt_group.name,mgt_group.description,mgt_group.grotype,mgt_group.grouptype,a.name,b.name,mgt_group.position
+		order by mgt_group.id desc
+		</if>
+	</select>
+
+	<insert id="insert"  parameterType="GroupPo" >
+	 insert into mgt_group(
+            name, description,use_flag, create_by, create_date,grotype,position,grouptype)
+     values (#{po.name,jdbcType=VARCHAR}, #{po.description,jdbcType=VARCHAR}, '1', #{po.create_by,jdbcType=VARCHAR},#{po.create_date},#{po.grotype,jdbcType=INTEGER},#{po.position,jdbcType=VARCHAR}, #{po.grouptype,jdbcType=INTEGER})
+	     <selectKey order="AFTER" resultType="java.lang.Integer" keyProperty="po.id">
+             <choose>
+		        <when  test="po.DBTYPE =='ORACLE'">SELECT mgt_group_id_seq.NEXTVAL-1 from DUAL</when>
+		        <otherwise>select last_value from mgt_group_id_seq</otherwise>
+	     	 </choose>
+        </selectKey> 
+	</insert>
+	
+	<insert id="insertGroDev"  parameterType="GroupPo">
+	 insert into mgt_group_dev_sys(
+            group_id, dev_id, use_flag, create_by, create_date, remark)
+     values (#{po.id,jdbcType=INTEGER}, #{po.device_id,jdbcType=INTEGER}, '1', #{po.create_by,jdbcType=VARCHAR}, #{po.create_date}, #{po.remark,jdbcType=VARCHAR})
+	</insert>
+	
+	<insert id="insertDoubleGro"  parameterType="GroupPo" >
+	 insert into mgt_double_group(
+			 double_id,group_id, use_flag, create_by, create_date,remark)
+     values (#{po.double_id},#{po.id}, '1', #{po.create_by}, #{po.create_date}, #{po.remark})
+	</insert>
+	<insert id="insertClusterGro"  parameterType="GroupPo" >
+	 insert into mgt_cluster_group(
+			 cluster_id,group_id, use_flag, create_by, create_date,remark)
+     values (#{po.cluster_id},#{po.id}, '1', #{po.create_by}, #{po.create_date}, #{po.remark})
+	</insert>		
+	<insert id="insertIntegrateGro"  parameterType="GroupPo" >
+	 insert into mgt_integrate_group(
+			 integrate_id,group_id, use_flag, create_by, create_date,remark)
+     values (#{po.integrate_id},#{po.id}, '1', #{po.create_by}, #{po.create_date}, #{po.remark})
+	</insert>	
+	<update id="update"  parameterType="GroupPo">
+	update mgt_group
+	set 
+<!-- 		uid=#{po.uid},  -->
+		name=#{po.name},
+		grotype=#{po.grotype},
+		grouptype=#{po.grouptype},
+		description=#{po.description},  
+		update_by=#{po.update_by}, 
+		update_date=#{po.update_date}
+	where 
+		id=#{po.id}
+	</update>
+	
+	<update id="delete"  parameterType="GroupPo">
+	 update mgt_group 
+	 set 
+		use_flag = '0',
+		update_by=#{po.update_by},
+		update_date=#{po.update_date}
+	 where id in (#{po.id})
+	</update>
+	
+	<select id="searchGroDev" parameterType="GroupDevicePo"  resultType="GroupDevicePo">
+		select * from mgt_group_dev_sys
+		where 1=1
+		and use_flag = '1'
+		and group_id = #{po.group_id}
+	</select>
+	
+	<select id="searchDevice" parameterType="DevicesPo"  resultType="DevicesPo">
+		select * from mgt_device
+		where 1=1 
+		and use_flag = '1'
+		<if test="po.idList != null">
+			and id in 
+			<foreach collection="po.idList" index="index" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	
+	<update id="deleteDevice"  parameterType="GroupPo">
+	 update mgt_group_dev_sys 
+	 set 
+		use_flag = '0',
+		update_by=#{po.update_by},
+		update_date=#{po.update_date}
+	 where group_id = #{po.id}
+	 <if test="po.idList != null">
+			and dev_id in
+			<foreach collection="po.idList" index="index" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</update>
+
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.taskmanager.dao.TaskExecDao">
+
+	<select id="getDeviceInfoByGroupId" parameterType="com.nari.taskmanager.po.TaskExecParam"
+		resultType="com.nari.taskmanager.po.TaskExecParam">
+		<choose>
+			<when test="taskExecParam.dbType == 'ORACLE'">
+				SELECT
+				mgt_device."UID" AS "uid",
+				mgt_device.in_username AS userName,
+				mgt_device.in_ip AS ip,
+				mgt_device.in_password AS passwd
+				FROM
+				mgt_device,
+				mgt_group,
+				mgt_group_dev_sys
+				WHERE
+				mgt_device.id = mgt_group_dev_sys.dev_id
+				AND mgt_group_dev_sys.use_flag = '1'
+				AND mgt_group.id = mgt_group_dev_sys.group_id
+				AND mgt_group.id = #{taskExecParam.id}
+			</when>
+			<when test="taskExecParam.dbType == 'POSTGRES'">
+				SELECT
+				mgt_device.uid AS uid,
+				mgt_device.in_username AS userName,
+				mgt_device.in_ip AS ip,
+				mgt_device.in_password AS passwd
+				FROM
+				mgt_device,
+				mgt_group,
+				mgt_group_dev_sys
+				WHERE
+				mgt_device.id = mgt_group_dev_sys.dev_id
+				AND mgt_group_dev_sys.use_flag = '1'
+				AND mgt_group.id = mgt_group_dev_sys.group_id
+				AND mgt_group.id = #{taskExecParam.id}
+			</when>
+		</choose>
+	</select>
+
+	<select id="getDoubleLivePo" parameterType="com.nari.taskmanager.po.TaskExecParam"
+		resultType="com.nari.module.doublemgt.po.DoublemgtPo">
+		<choose>
+			<when test="taskExecParam.dbType == 'ORACLE'">
+				select name as name ,"UID" as "uid" from mgt_double where id=#{taskExecParam.id}
+			</when>
+			<when test="taskExecParam.dbType == 'POSTGRES'">
+				select name as name ,uid as uid from mgt_double where id=#{taskExecParam.id}
+			</when>
+		</choose>
+	</select>
+
+	<select id="getGroupInfoById" parameterType="int"
+		resultType="com.nari.module.group.po.GroupPo">
+		select * from mgt_group where id=#{id}
+	</select>
+
+</mapper>

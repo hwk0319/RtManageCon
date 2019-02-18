@@ -1,0 +1,97 @@
+
+/** 登录页面的样式开始**/
+html{
+	height: 100%;
+}
+.bg {
+	background-color: #d9d9d9;
+	background-image: url("../../jsps/images/login.png");
+	background-position: center;
+	background-repeat: repeat-x;
+}
+body{
+	padding-top: 210px;
+}
+.divInput{
+	margin-left:5px;
+	width:50px;
+	float: left;
+}
+.div1 {
+	width: 380px;
+	height: 235px;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+.div2 {
+	border: 1px solid #CCC;
+	line-height: 40px;
+	vertical-align: middle;
+	text-align: center;
+	width: 320px;
+	height: 40px;
+	padding-left: 2px;
+	margin: 10px auto;
+}
+
+.identify_code{
+	border: 1px solid #CCC;
+	line-height: 40px;
+	vertical-align: middle;
+	text-align: center;
+	width: 320px;
+	height: 40px;
+	padding-left: 2px;
+	margin: 10px auto;
+}
+#vertity_img{
+	vertical-align:middle;
+	width:60px;
+}
+.div4 {
+	line-height: 40px;
+	vertical-align: middle;
+	text-align: center;
+	padding: 2px;
+}
+/**input标签**/
+.style1 {
+	border: 0px;
+	width: 200px;
+	height: 35px;
+	text-align: left;
+	line-height: 40px;
+	font-size: 16px;
+	outline: medium;
+}
+/**img标签**/
+.style2 {
+	width:18px;
+	line-height: 40px;
+	vertical-align: middle;
+	text-align: right;
+}
+/**button按钮样式**/
+.button {
+	line-height: 40px;
+	color: #ffffff;
+	background-color: #1d6dd9;
+	font-size: 18px;
+	font-weight: bold;
+	border: 0px solid #dcdcdc;
+	-webkit-box-shadow: 0px 10px 14px -7px #276873;
+	box-shadow: 0px 10px 14px -7px #276873;
+	text-align: center;
+	display: inline-block;
+	text-decoration: none;
+	overflow: visible;
+	width: 320px;
+	height: 40px;
+}
+
+.button:hover {
+	background-color: #508BDB;
+}
+/**登录页面样式结束**/

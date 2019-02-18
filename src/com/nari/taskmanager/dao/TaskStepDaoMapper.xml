@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.taskmanager.dao.TaskStepDao">
+
+	<!-- 获取模板任务的步骤 end -->
+	
+	<select id="getTaskStepTemplate" parameterType="com.nari.taskmanager.po.TaskStep"
+		resultType="com.nari.taskmanager.po.TaskStep">
+		select id,tpl_step_id as taskId,tpl_step_name as
+		name,tpl_step_shell as shellName,tpl_step_timeout as
+		timeOut,tpl_step_order as stepOrder, tpl_step_desc as poDesc,tpl_step_path as shellPath
+		from task_step_template
+		where 1=1
+		<if test="taskStep.id != null and taskStep.id != ''"> and id =#{taskStep.id}</if>
+		<if test="taskStep.taskId != null and taskStep.taskId != ''"> and tpl_step_id =#{taskStep.taskId}</if>
+		order by tpl_step_order asc
+	</select>
+
+
+	<!-- 获取模板任务的参数 -->
+	<select id="getTaskParamTemplate" parameterType="com.nari.taskmanager.po.TaskParam"
+		resultType="com.nari.taskmanager.po.TaskParam">
+		SELECT
+		id,
+		tpl_param_id AS taskId,
+		tpl_param_name AS name,
+		tpl_param_value AS value,
+		tpl_param_desc AS poDesc,
+		tpl_param_validateStr AS validateStr,
+		tpl_param_required AS required
+		FROM
+		task_param_template
+		WHERE 1=1
+		<if test="taskParam.id != null and taskParam.id != ''"> and id =#{taskParam.id}</if>
+		<if test="taskParam.taskId != null and taskParam.taskId != ''"> and tpl_param_id =#{taskParam.taskId}</if>
+	</select>
+
+	<!-- 插入一个任务step模板 -->
+	<insert id="saveTaskStepTemplate" parameterType="com.nari.taskmanager.po.TaskStep">
+		insert into
+		task_step_template(tpl_step_id,tpl_step_name,tpl_step_shell,tpl_step_path,tpl_step_timeout,tpl_step_order,tpl_step_desc)
+		values
+		(#{taskStep.taskId},#{taskStep.name},#{taskStep.shellName},#{taskStep.shellPath},#{taskStep.timeOut},#{taskStep.stepOrder},#{taskStep.poDesc})
+	</insert>
+
+	<delete id="removeTaskStepTemplate" parameterType="com.nari.taskmanager.po.TaskStep">
+		delete from
+		task_step_template where id=#{taskStep.id} 
+	</delete>
+		
+	<delete id="removeTaskStepTpls" parameterType="int">
+		delete from task_step_template where tpl_step_id=#{taskId}
+	</delete>
+	<delete id="removeTaskParamTpls" parameterType="int">
+		delete from task_param_template where tpl_param_id=#{taskId}
+	</delete>
+	
+	
+
+	<update id="updateTaskStepTemplate" parameterType="com.nari.taskmanager.po.TaskStep">
+		update task_step_template
+		<trim prefix="set" suffixOverrides=",">
+			<if test="taskStep.name != null and taskStep.name != '' ">tpl_step_name=#{taskStep.name},</if>
+			<if test="taskStep.stepOrder != null and taskStep.stepOrder != '' ">tpl_step_order=#{taskStep.stepOrder},</if>
+			<if test="taskStep.timeOut != null and taskStep.timeOut != '' ">tpl_step_timeout=#{taskStep.timeOut},</if>
+			<if test="taskStep.shellName != null and taskStep.shellName != '' ">tpl_step_shell=#{taskStep.shellName},</if>
+			<if test="taskStep.shellPath != null and taskStep.shellPath != '' ">tpl_step_path=#{taskStep.shellPath},</if>
+			<if test="taskStep.poDesc != null and taskStep.poDesc != '' ">tpl_step_desc=#{taskStep.poDesc},</if>
+		</trim>
+		where id=#{taskStep.id}
+	</update>
+	
+		<insert id="saveTaskParamTemplate" parameterType="com.nari.taskmanager.po.TaskStep">
+		INSERT INTO
+		task_param_template
+		(tpl_param_id,tpl_param_name,tpl_param_value,tpl_param_desc,tpl_param_validateStr,tpl_param_required)
+		VALUES
+		(#{taskParam.taskId},#{taskParam.name},#{taskParam.value},#{taskParam.poDesc},#{taskParam.validateStr},#{taskParam.required})
+	</insert>
+
+	<update id="updateTaskParamTemplate" parameterType="com.nari.taskmanager.po.TaskParam">
+		update task_param_template
+		<trim prefix="set" suffixOverrides=",">
+			<if test="taskParam.name != null and taskParam.name != '' ">tpl_param_name=#{taskParam.name},</if>
+			<if test="taskParam.value != null and taskParam.value != '' ">tpl_param_value=#{taskParam.value},</if>
+			<if test="taskParam.poDesc != null and taskParam.poDesc != '' ">tpl_param_desc=#{taskParam.poDesc},</if>
+			<if test="taskParam.validateStr != null and taskParam.validateStr != '' ">tpl_param_validateStr=#{taskParam.validateStr},</if>
+			<if test="taskParam.required != null and taskParam.required != '' ">tpl_param_required=#{taskParam.required},</if>
+		</trim>
+		where id=#{taskParam.id}
+	</update>
+	
+	<delete id="removeTaskParamTemplate" parameterType="com.nari.taskmanager.po.TaskParam">
+		delete from task_param_template where id=#{taskParam.id}
+	</delete>
+
+
+	<insert id="addTaskStep"  parameterType="com.nari.taskmanager.po.TaskStep">
+		insert into
+		task_step_value(task_step_id,task_step_name,task_step_state,task_step_createTime,task_step_costTime,task_step_shell,task_step_desc,task_step_order,task_step_timeout,task_step_path,task_step_resultDesc,task_step_percent)
+		values
+		(#{taskStep.taskId},#{taskStep.name},#{taskStep.state},#{taskStep.createTime},#{taskStep.costTime},#{taskStep.shellName},#{taskStep.poDesc},#{taskStep.stepOrder},#{taskStep.timeOut},#{taskStep.shellPath},#{taskStep.resultDesc},#{taskStep.percent})
+	</insert>
+
+	<insert id="addTaskSteps" parameterType="com.nari.taskmanager.po.TaskStep">
+	<choose>
+	<when test="taskStep.dbType == 'ORACLE'">
+		insert into
+		task_step_value(task_step_id,task_step_name,task_step_state,task_step_createTime,task_step_costTime,task_step_shell,task_step_desc,task_step_order,task_step_timeout,task_step_path,task_step_resultDesc,task_step_percent)
+		values
+		<foreach collection="taskSteps" item="taskStep" index="index" open="(" close=")"
+			separator=",">
+			(#{taskStep.taskId},#{taskStep.name},#{taskStep.state},#{taskStep.createTime},#{taskStep.costTime},#{taskStep.shellName},#{taskStep.poDesc},#{taskStep.stepOrder},#{taskStep.timeOut},#{taskStep.shellPath},#{taskStep.resultDesc},#{taskStep.percent})
+		</foreach>
+	</when>
+	</choose>
+
+	</insert>
+
+
+	<insert id="addTaskParam" parameterType="com.nari.taskmanager.po.TaskParam">
+	insert into
+		task_param_value(task_param_id,task_param_name,task_param_value,task_param_desc,task_param_validateStr,task_param_required)
+		values
+		(#{taskParam.taskId},#{taskParam.name},#{taskParam.value},#{taskParam.poDesc},#{taskParam.validateStr},#{taskParam.required})
+	</insert>
+	
+	<sql id="updateTaskStepSql" >
+		update task_step_value
+		<trim prefix="set" suffixOverrides=",">
+			<if test="taskStep.name != null and taskStep.name != '' "> task_step_name=#{taskStep.name},</if>
+			<if test="taskStep.state != null and taskStep.state != '' ">task_step_state=#{taskStep.state},</if>
+			<if test="taskStep.costTime != null and taskStep.costTime != '' ">task_step_costTime=#{taskStep.costTime},</if>
+			<if test="taskStep.poDesc != null and taskStep.poDesc != '' ">task_step_desc=#{taskStep.poDesc},</if>
+			<if test="taskStep.stepOrder != null and taskStep.stepOrder != '' and taskStep.stepOrder != 0 ">task_step_order=#{taskStep.stepOrder},</if>
+			<if test="taskStep.timeOut != null and taskStep.timeOut != '' ">task_step_timeout=#{taskStep.timeOut},</if>
+			<if test="taskStep.shellName != null and taskStep.shellName != '' ">task_step_shell=#{taskStep.shellName},</if>
+			<if test="taskStep.shellPath != null and taskStep.shellPath != '' ">task_step_path=#{taskStep.shellPath},</if>
+			<if test="taskStep.resultDesc != null ">task_step_resultDesc=#{taskStep.resultDesc},</if>
+			<if test="taskStep.percent != null">task_step_percent=#{taskStep.percent},</if>
+		</trim>
+		where id=#{taskStep.id}
+	</sql>
+	<update id="updateTaskStep" parameterType="com.nari.taskmanager.po.TaskStep">
+		<include refid="updateTaskStepSql" ></include>
+	</update>
+
+	<update id="updateTaskParam" parameterType="com.nari.taskmanager.po.TaskParam">
+		update task_param_value
+		<trim prefix="set" suffixOverrides=",">
+			<if test=" taskParam.name != null and  taskParam.name != '' ">task_param_name=#{ taskParam.name},</if>
+			<if test="taskParam.value != null and taskParam.value != '' ">task_param_value=#{taskParam.value},</if>
+			<if test="taskParam.poDesc != null and taskParam.poDesc != '' ">task_param_desc=#{taskParam.poDesc},</if>
+			<if test="taskParam.validateStr != null and taskParam.validateStr != '' ">task_param_validateStr=#{taskParam.validateStr},</if>
+			<if test="taskParam.required != null and taskParam.required != '' ">task_param_required=#{taskParam.required},</if>
+		</trim>
+		where id=#{taskParam.id}
+	</update>
+
+	<delete id="removeTaskStep" parameterType="com.nari.taskmanager.po.TaskStep">
+		delete from task_step_value where id=#{taskStep.id}
+	</delete>
+
+	<delete id="removeTaskSteps" parameterType="int">
+		delete from task_step_value where task_step_id=#{taskId}
+	</delete>
+
+	<delete id="removeTaskParam" parameterType="com.nari.taskmanager.po.TaskParam">
+		delete from task_Param_value where id=#{taskParam.id}
+	</delete>
+	
+	<delete id="removeTaskParams" parameterType="int">
+		delete from task_Param_value where task_param_id=#{taskId}
+	</delete>
+	
+	
+	
+	<select id="getTaskStep" parameterType="com.nari.taskmanager.po.TaskStep" resultType="com.nari.taskmanager.po.TaskStep">
+		SELECT
+			task_step_id AS taskId,
+			task_step_name AS name,
+			task_step_state AS state,
+			task_step_createTime AS createTime,
+			task_step_costTime AS costTime,
+			task_step_desc AS poDesc,
+			task_step_order AS stepOrder,
+			task_step_timeout AS timeOut,
+			task_step_shell AS shellName,
+			task_step_path AS shellPath,
+			task_step_percent AS percent,
+			task_step_resultDesc AS resultDesc,
+			id as id
+		FROM
+			task_step_value 
+		WHERE 1=1
+		<if test="taskStep.id != null and taskStep.id != '' and  taskStep.id != 0 "> and id =#{taskStep.id}</if>
+		<if test="taskStep.taskId != null and taskStep.taskId != ''"> and task_step_id =#{taskStep.taskId}</if>
+		ORDER BY
+			task_step_order asc
+	</select>
+
+	<select id="getTaskParam" parameterType="com.nari.taskmanager.po.TaskParam" resultType="com.nari.taskmanager.po.TaskParam">
+		SELECT
+		task_param_id AS taskId,
+		task_param_name AS name,
+		task_param_value AS value,
+		task_param_desc AS poDesc,
+		task_param_validateStr AS validateStr,
+		task_param_required AS required,
+		id as id
+		FROM
+		task_param_value
+		WHERE 1=1
+		<if test="taskParam.id != null and taskParam.id != '' and taskParam.id != 0 "> and id =#{taskParam.id}</if>
+		<if test="taskParam.taskId != null and taskParam.taskId != ''"> and task_param_id =#{taskParam.taskId}</if>
+	</select>
+	
+</mapper>

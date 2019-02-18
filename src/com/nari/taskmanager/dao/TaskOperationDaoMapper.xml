@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.taskmanager.dao.TaskOperationDao">
+<!-- 添加任务模板 -->
+	<insert id="insertTaskTemplate" parameterType="com.nari.taskmanager.po.TaskOperation">
+			insert into
+				task_operation_template(tpl_opera_id,tpl_opera_name,tpl_opera_modul,tpl_opera_path,tpl_opera_desc,tpl_opera_sql)
+				values(#{taskOperation.id},#{taskOperation.name},#{taskOperation.modul},#{taskOperation.path},#{taskOperation.poDesc},#{taskOperation.sql})
+	</insert>
+	
+		<!-- 删除一个任务模板 -->
+	<delete id="removeTaskTemplate" parameterType="com.nari.taskmanager.po.TaskOperation">
+		delete
+		from
+		task_operation_template where tpl_opera_id=#{taskOperation.id}
+	</delete>
+	
+	
+	<!-- 保存一个任务到数据库 -->
+	<insert id="insertTask" parameterType="com.nari.taskmanager.po.TaskOperation">
+		insert into task_operation_value
+		(task_opera_id,task_opera_state,task_opera_type,task_opera_createTime,task_opera_costTime,task_opera_name,task_opera_modul,task_opera_cronExpress,task_opera_desc,task_opera_path,task_opera_presetid,task_opera_cloneType,task_opera_uid, position)
+		values(#{taskOperation.id},#{taskOperation.state},#{taskOperation.type},#{taskOperation.createTime},#{taskOperation.costTime},#{taskOperation.name},#{taskOperation.modul},#{taskOperation.cronExpress},#{taskOperation.poDesc},#{taskOperation.path},#{taskOperation.presetId},#{taskOperation.cloneType},#{taskOperation.userId}, #{taskOperation.position})
+	</insert>
+	
+	<!-- 删除一个任务 -->
+	<delete id="removeTask"  parameterType="com.nari.taskmanager.po.TaskOperation">
+		delete from
+		task_operation_value where task_opera_id=#{taskOperation.id}
+	</delete>
+	
+		<!-- 更新一个operation，不会更新其关联的step -->
+	<update id="updateTaskOperation" parameterType="TaskOperation">
+		update task_operation_value
+		<trim prefix="set" suffixOverrides=",">
+			<if test="taskOperation.state != null and taskOperation.state != ''">task_opera_state=#{taskOperation.state},</if>
+			<if test="taskOperation.type != null and taskOperation.type != ''">task_opera_type=#{taskOperation.type},</if>
+			<if test="taskOperation.lastTime != null and taskOperation.lastTime != ''">task_opera_lastTime=#{taskOperation.lastTime},</if>
+			<if test="taskOperation.costTime != null and taskOperation.costTime != ''">task_opera_costTime=#{taskOperation.costTime},</if>
+			<if test="taskOperation.nextTime != null and taskOperation.nextTime != ''">task_opera_nextTime=#{taskOperation.nextTime},</if>
+			<if test="taskOperation.name != null and taskOperation.name != ''">task_opera_name=#{taskOperation.name},</if>
+			<if test="taskOperation.modul != null and taskOperation.modul != ''">task_opera_modul=#{taskOperation.modul},</if>
+			<if
+				test="taskOperation.cronExpress != null and taskOperation.cronExpress != ''">task_opera_cronExpress=#{taskOperation.cronExpress},</if>
+			<if test="taskOperation.poDesc != null and taskOperation.poDesc != ''">task_opera_desc=#{taskOperation.poDesc},</if>
+			<if
+				test="taskOperation.resultDesc != null and taskOperation.resultDesc != ''">task_opera_resultDesc=#{taskOperation.resultDesc},</if>
+			<if test="taskOperation.path != null and taskOperation.path != ''">task_opera_path=#{taskOperation.path},</if>
+			<if test="taskOperation.sql != null and taskOperation.sql != ''">task_opera_sql=#{taskOperation.sql},</if>
+			<if test="taskOperation.userId != null and taskOperation.userId != ''">task_opera_uid=#{taskOperation.userId},</if>
+			task_opera_percent=#{taskOperation.percent},
+		</trim>
+		where
+		task_opera_id=#{taskOperation.id}
+	</update>
+
+	<update id="updateTaskOperationTemplate" parameterType="com.nari.taskmanager.po.TaskOperation">
+		update
+		task_operation_template
+		<trim prefix="set" suffixOverrides=",">
+			<if test="taskOperation.name != null and taskOperation.name != ''">tpl_opera_name=#{taskOperation.name},</if>
+			<if test="taskOperation.modul != null and taskOperation.modul != ''">tpl_opera_modul=#{taskOperation.modul},</if>
+			<if test="taskOperation.poDesc != null and taskOperation.poDesc != ''">tpl_opera_desc=#{taskOperation.poDesc},</if>
+			<if test="taskOperation.sql != null and taskOperation.sql != ''">tpl_opera_sql=#{taskOperation.sql},</if>
+		</trim>
+		where tpl_opera_id=#{taskOperation.id}
+	</update>
+
+	<!-- 任务ID的sequence -->
+	<select id="getOperationSeq" resultType="int">
+	<choose>
+		<when test="taskOperation.dbType == 'ORACLE'">
+		select task_operation_seq.nextval from dual
+		</when>
+		<when test="taskOperation.dbType == 'POSTGRES'">
+			select
+			nextval('task_operation_seq')
+		</when>
+	</choose>
+	</select>
+	
+	
+	<!-- 任务ID的sequence -->
+
+	<select id="getTemplateSeq" resultType="int">
+		<choose>
+		<when test="taskOperation.dbType == 'ORACLE'">
+		select task_template_seq.nextval from dual
+		</when>
+		<when test="taskOperation.dbType == 'POSTGRES'">
+		select
+		nextval('task_template_seq')
+		</when>
+	</choose>
+	</select>
+	
+	
+	<select id="getTaskTotalCount" resultType="int" parameterType="com.nari.taskmanager.po.TaskOperation">
+		select count(*) from task_operation_value
+		WHERE 1=1
+		<if test="taskOperation.id != null and taskOperation.id != '' and taskOperation.id != 0"> and task_opera_id =#{taskOperation.id}</if>
+		<if test="taskOperation.modul != null and taskOperation.modul != ''"> and task_opera_modul =#{taskOperation.modul}</if>
+		<if test="taskOperation.name != null and taskOperation.name != ''"> and task_opera_name =#{taskOperation.name}</if>
+		<if test="taskOperation.startTime != null and taskOperation.startTime != ''"> and task_opera_createTime  &gt;=  #{taskOperation.startTime}</if>
+		<if test="taskOperation.endTime != null and taskOperation.endTime != ''"> and task_opera_createTime  &lt;=  #{taskOperation.endTime}</if>
+	</select>
+	<select id="getTaskTplTotalCount" resultType="int" parameterType="com.nari.taskmanager.po.TaskOperation">
+		select count(*) from task_operation_template
+		where 1=1
+		<if test="taskOperation.id != null and taskOperation.id != '' and taskOperation.id != 0 "> and tpl_opera_id =#{taskOperation.id}</if>
+		<if test="taskOperation.modul != null and taskOperation.modul != ''"> and tpl_opera_modul =#{taskOperation.modul}</if>
+		<if test="taskOperation.name != null and taskOperation.name != ''"> and tpl_opera_name =#{taskOperation.name}</if>
+	</select>
+
+	<select id="getTask" resultType="com.nari.taskmanager.po.TaskOperation" parameterType="com.nari.taskmanager.po.TaskOperation">
+		SELECT
+		task_opera_id AS id,
+		task_opera_state AS state,
+		task_opera_type AS type,
+		task_opera_createTime AS createTime,
+		task_opera_lastTime AS lastTime,
+		task_opera_costTime AS costTime,
+		task_opera_name AS name,
+		task_opera_modul AS modul,
+		task_opera_cronExpress AS cronExpress,
+		task_opera_desc AS poDesc,
+		task_opera_resultDesc AS resultDesc,
+		task_opera_path AS path,
+		task_opera_percent AS percent,
+		task_opera_sql AS sql,
+		task_opera_presetid AS presetId,
+		task_opera_cloneType AS cloneType,
+		task_opera_uid AS userId,
+		task_opera_nextTime as nextTime
+		FROM
+		task_operation_value
+		WHERE 1=1
+		<if test="taskOperation.id != null and taskOperation.id != '' and taskOperation.id != 0"> and task_opera_id =#{taskOperation.id}</if>
+		<if test="taskOperation.modul != null and taskOperation.modul != ''"> and task_opera_modul =#{taskOperation.modul}</if>
+		<if test="taskOperation.name != null and taskOperation.name != ''"> and task_opera_name like concat(concat('%',#{taskOperation.name}),'%')</if>
+		<if test="taskOperation.startTime != null and taskOperation.startTime != ''"> and task_opera_createTime  &gt;=  #{taskOperation.startTime}</if>
+		<if test="taskOperation.endTime != null and taskOperation.endTime != ''"> and task_opera_createTime  &lt;=  #{taskOperation.endTime}</if>
+		<if test="taskOperation.presetId != 0">and task_opera_presetid=#{taskOperation.presetId}</if>
+		<if test="taskOperation.userId != null and taskOperation.userId != ''">and task_opera_uid =#{taskOperation.userId}</if>
+		<if test="taskOperation.position != null and taskOperation.position != '' "> and position = #{taskOperation.position}</if>
+		<choose>
+			<when test="taskOperation.orderBy != null and taskOperation.orderBy != ''">
+				order by ${taskOperation.orderBy}
+			</when>
+			<otherwise>
+				order by task_opera_id desc
+			</otherwise>
+		</choose>
+		 <!-- <if test="taskOperation.limitMax != 0 ">  limit  #{taskOperation.rows} offset #{taskOperation.limitMin} </if> -->
+	</select>
+
+
+	<select id="getTemplateTask" parameterType="com.nari.taskmanager.po.TaskOperation"
+		resultType="com.nari.taskmanager.po.TaskOperation">
+		SELECT
+		tpl_opera_id AS id,
+		tpl_opera_name AS name,
+		tpl_opera_modul AS modul,
+		tpl_opera_path AS path,
+		tpl_opera_sql AS sql,
+		tpl_opera_desc As poDesc
+		FROM
+		task_operation_template
+		WHERE 1=1
+		<if test="taskOperation.id != null and taskOperation.id != '' and taskOperation.id != 0 "> and tpl_opera_id =#{taskOperation.id}</if>
+		<if test="taskOperation.modul != null and taskOperation.modul != ''"> and tpl_opera_modul =#{taskOperation.modul}</if>
+		<if test="taskOperation.name != null and taskOperation.name != ''"> and tpl_opera_name =#{taskOperation.name}</if>
+		order by tpl_opera_id
+		<!-- <if test="taskOperation.limitMax != 0 ">  limit  #{taskOperation.rows} offset #{taskOperation.limitMin} </if> -->
+	</select>
+	
+	<select id="search1" parameterType="TaskOperation"  resultType="TaskOperation">
+		select *
+		  from (select a.*, rownum rn
+		          from (SELECT
+							task_opera_id AS id,
+							task_opera_state AS state,
+							task_opera_type AS type,
+							to_char(task_opera_createTime,'yyyy-MM-dd HH:mm:ss') AS createTime,
+							to_char(task_opera_lastTime,'yyyy-MM-dd HH:mm:ss') AS lastTime,
+							task_opera_costTime AS costTime,
+							task_opera_name AS name,
+							task_opera_modul AS modul,
+							task_opera_cronExpress AS cronExpress,
+							task_opera_desc AS poDesc,
+							task_opera_resultDesc AS resultDesc,
+							task_opera_path AS path,
+							task_opera_percent AS percent,
+							task_opera_sql AS sql,
+							task_opera_presetid AS presetId,
+							task_opera_cloneType AS cloneType,
+							task_opera_uid AS userId,
+							to_char(task_opera_nextTime,'yyyy-MM-dd HH:mm:ss') as nextTime,
+							a.name as taskTypeName,
+                       		b.name as taskStatusName
+							FROM
+							task_operation_value
+							left join sys_dict a on to_number(a.value,'9999') = task_operation_value.task_opera_type  and  a.type = 'task_type' and a.use_flag=1
+							left join sys_dict b on to_number(b.value,'9999') = task_operation_value.task_opera_state  and  b.type = 'task_status' and b.use_flag=1
+							WHERE 1=1
+							<if test="taskOperation.id != null and taskOperation.id != '' and taskOperation.id != 0"> and task_opera_id =#{taskOperation.id}</if>
+							<if test="taskOperation.modul != null and taskOperation.modul != ''"> and task_opera_modul =#{taskOperation.modul}</if>
+							<if test="taskOperation.name != null and taskOperation.name != ''"> and task_opera_name =#{taskOperation.name}</if>
+							<if test="taskOperation.startTime != null and taskOperation.startTime != ''"> and task_opera_createTime  &gt;=  #{taskOperation.startTime}</if>
+							<if test="taskOperation.endTime != null and taskOperation.endTime != ''"> and task_opera_createTime  &lt;=  #{taskOperation.endTime}</if>
+							<if test="taskOperation.presetId != 0">and task_opera_presetid=#{taskOperation.presetId}</if>
+							<if test="taskOperation.userId != null and taskOperation.userId != ''">and task_opera_uid =#{taskOperation.userId}</if>
+							order by task_opera_id desc
+							<!-- <choose>
+								<when test="taskOperation.orderBy != null and taskOperation.orderBy != ''">
+									order by ${taskOperation.orderBy}
+								</when>
+								<otherwise>
+									order by task_opera_lastTime desc
+								</otherwise>
+							</choose> -->
+							) a
+		         where rownum &lt;= #{taskOperation.pageSize} * #{taskOperation.pageNum})
+		 where rn &gt; #{taskOperation.pageSize} * (#{taskOperation.pageNum} - 1)
+	</select>
+	
+	<select id="searchTotal" parameterType="TaskOperation"  resultType="TaskOperation">
+		SELECT
+		task_opera_id AS id,
+		task_opera_state AS state,
+		task_opera_type AS type,
+		task_opera_createTime AS createTime,
+		task_opera_lastTime AS lastTime,
+		task_opera_costTime AS costTime,
+		task_opera_name AS name,
+		task_opera_modul AS modul,
+		task_opera_cronExpress AS cronExpress,
+		task_opera_desc AS poDesc,
+		task_opera_resultDesc AS resultDesc,
+		task_opera_path AS path,
+		task_opera_percent AS percent,
+		task_opera_sql AS sql,
+		task_opera_presetid AS presetId,
+		task_opera_cloneType AS cloneType,
+		task_opera_uid AS userId,
+		task_opera_nextTime as nextTime
+		FROM
+		task_operation_value
+		WHERE 1=1
+		<if test="taskOperation.id != null and taskOperation.id != '' and taskOperation.id != 0"> and task_opera_id =#{taskOperation.id}</if>
+		<if test="taskOperation.modul != null and taskOperation.modul != ''"> and task_opera_modul =#{taskOperation.modul}</if>
+		<if test="taskOperation.name != null and taskOperation.name != ''"> and task_opera_name =#{taskOperation.name}</if>
+		<if test="taskOperation.startTime != null and taskOperation.startTime != ''"> and task_opera_createTime  &gt;=  #{taskOperation.startTime}</if>
+		<if test="taskOperation.endTime != null and taskOperation.endTime != ''"> and task_opera_createTime  &lt;=  #{taskOperation.endTime}</if>
+		<if test="taskOperation.presetId != 0">and task_opera_presetid=#{taskOperation.presetId}</if>
+		<if test="taskOperation.userId != null and taskOperation.userId != ''">and task_opera_uid =#{taskOperation.userId}</if>
+		<!-- <choose>
+			<when test="taskOperation.orderBy != null and taskOperation.orderBy != ''">
+				order by ${taskOperation.orderBy}
+			</when>
+			<otherwise>
+				order by task_opera_lastTime desc
+			</otherwise>
+		</choose> -->
+	</select>
+
+</mapper>

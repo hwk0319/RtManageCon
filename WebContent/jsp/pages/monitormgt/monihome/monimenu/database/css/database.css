@@ -1,0 +1,163 @@
+html,body{
+	margin:0px;
+	padding:0px;
+}
+.contain{
+	margin:1%;
+	width:98%;
+	height:95%;
+	float:left;
+	min-width:400px;
+}
+.search{
+	border-bottom: 1px solid #ddd;
+}
+.goBack{
+	float: left;
+	width:8%;
+	height: 90%;
+}
+.goBack input{
+	width:100%;
+	height: 100%;
+	border-radius: 5px;
+	background-color:#3297d8;
+	font-size:20px;
+	color:#fff;
+	text-align:center;
+	line-height: 20px; 
+}
+.search-txt{
+	float: right;
+	width:40%;
+	height: 90%;
+	/* border: 1px solid #3297d8; */
+}
+.search-txt .txt{
+	float: left;
+	width: 60%;
+	height: 100%;
+}
+.search-txt input{
+	float: left;
+	width:90%;
+	height: 100%;
+}
+#kw{
+	height:26px;
+}
+#g2 ul li:hover{
+	background:#3297d8;
+	color:#fff;
+}
+.search-txt .search-btn{
+	text-align:center;
+	width: 20%;
+	height: 100%;
+	background-color:#3297d8;
+	font-size:20px;
+	color:#fff;
+	line-height: 20px; 
+	float: left;
+}
+
+ .prompt{
+	width: 95%;
+	height:30px;
+	border: 1px solid #ddd;
+	margin-left: 6px;
+	margin-top:8px;
+	border-radius: 5px;
+}
+.hint{
+	width: 50%;
+	height: 100%;
+	float: left;
+	line-height: 30px;
+	font-size:14px;
+	text-indent:3px;
+}
+.form{
+	width: 29%;
+	float: left;
+	height: 100%;
+	font-size:14px;
+	line-height: 30px;
+	text-align:right;
+}
+.showlist,.showImg{
+	cursor: pointer;
+}
+.showlist:hover,.showImg:hover{
+	color:#3297d8;
+} 
+
+.contentshow{
+	/* width: 95%; */
+	height:auto;
+	margin-left: 6px;
+	margin-top: 10px;
+	overflow: hidden;
+}
+.contentinfo{
+	width:100%;
+	height:100%;
+	overflow: hidden;
+}
+.infomenu{
+	width:calc(100% / 8 - 16px);
+	float: left;
+	height: 35%;
+	margin: 5px;
+	overflow: hidden;
+	cursor: pointer;
+	padding: 1px;
+	border-radius:5px;
+	border: 1px solid #aaa;
+}
+.infomenu:hover{
+	 box-shadow:#666 0px 0px 10px;  
+	-webkit-box-shadow:#666 0px 0px 10px;  
+    -moz-box-shadow:#666 0px 0px 10px;  
+}
+.infomenu span{
+	width: 100%;
+	float: left;
+	font-size: 13px;
+	line-height: 20px;
+	text-align: center;
+}
+.infomenu .infoimg{
+	width:60%; 
+	height: 85px; 
+	margin:5% auto;
+	background: url("../../../../monihome/imgs/datebase.png") 0% 0% / 100% 100% no-repeat;
+}
+.infomenu .infotxt{
+	width:100%; 
+	height: 40px; 
+	overflow: hidden;
+	white-space: nowrap;
+	margin-top: 10px;
+}
+.pageDiv{
+	position: absolute;
+	bottom:0;
+	height: 35px;
+	/* border-top: 1px solid #ccc; */
+}
+.pageDiv span{
+	border: 1px solid #666666;
+	color:#666666;
+	font-size:13px;
+	padding:4px;
+	cursor: pointer;
+}
+.pageDiv span:hover{
+	border: 1px solid #3297d8;
+	color:#3297d8;
+}
+
+.sethidden{
+	display: none;
+}

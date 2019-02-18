@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.monitormgt.monihome.active.dao.ActiveDao">
+
+	<select id="search" parameterType="ActivePo"  resultType="ActivePo">
+	   select *
+		  from mgt_double
+		 where 1 = 1
+		   and use_flag = '1'
+		   <if test="po.position != null and po.position != '' ">and mgt_double.position = #{po.position}</if>
+		   <if test="po.searchText != null and po.searchText != ''">
+				and ("NAME" like concat(concat('%',#{po.searchText}),'%') 
+					or "UID" like concat(concat('%',#{po.searchText}),'%'))
+		   </if>
+	</select>
+	
+	<select id="searchTotal" parameterType="ActivePo"  resultType="Integer">
+		select count(*) as total from mgt_double where use_flag = '1'
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">
+	        	<if test="po.position != null and po.position != '' ">and mgt_double.position = #{po.position}</if>
+	           <if test="po.searchText != null and po.searchText != ''">
+				 and mgt_double."UID" like concat(concat('%',#{po.searchText}),'%')
+			   </if>
+	        </when>
+	        <otherwise>
+	           <if test="po.searchText != null and po.searchText != ''">
+				 and mgt_double.uid like concat(concat('%',#{po.searchText}),'%')
+			   </if>
+			</otherwise>
+	    </choose>
+	</select>
+	
+	<select id="searchList" parameterType="ActivePo"  resultType="ActivePo">
+		select * from mgt_double where use_flag = '1' 
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">
+	           <if test="po.searchText != null and po.searchText != ''">
+				 and mgt_double."UID" like concat(concat('%',#{po.searchText}),'%')
+			   </if>
+	        </when>
+	        <otherwise>
+	           <if test="po.searchText != null and po.searchText != ''">
+				 and mgt_double.uid like concat(concat('%',#{po.searchText}),'%')
+			   </if>
+			</otherwise>
+	    </choose>
+		order by mgt_double.id desc
+	</select>
+</mapper>

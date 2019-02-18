@@ -1,0 +1,41 @@
+/* Content */
+.content{
+	border: 1px solid #ccc;
+	margin-top: 5px;
+	/* width: 80%;
+    height: 90%; */
+}
+.content p{                       
+	border-color: #FF1493;                 /*Main Color*/
+	color:#333333;	
+}
+.content h4{
+	color:#FF1493;                         /*Main Color*/                   
+}
+.content h6{
+	color:#333333;
+}
+.content h6 i{
+	color: #FF1493;                        /*Main Color*/     
+}
+
+/* Label */
+.label i{
+	color:#333333;
+}
+/* Label default background */
+.default{
+	background: #F1F1F1;                         
+	color:#333333;
+}
+/* Label Clicked background */
+.clicked{
+	background: #72ACCD;                    /*Main Color*/                  
+	color:#FFFFFF;
+}
+/* Label hover background */
+.hover{
+	background: #4391BE;                    /*Main Color*/                   
+	color:#FFFFFF;
+}
+

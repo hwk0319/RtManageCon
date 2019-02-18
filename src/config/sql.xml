@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sql-Maping>
+    <select id="IDLE_TIME">
+		select round((b.VALUE/(select sum(o.VALUE) from v$osstat o where o.STAT_NAME in('IDLE_TIME','BUSY_TIME')))*100,2) IDLE_TIME from v$osstat b where b.STAT_NAME='IDLE_TIME'
+	</select>
+	<select id="USER_TIME">
+	    select round((b.VALUE/(select sum(o.VALUE)  from v$osstat o where o.STAT_NAME in('IDLE_TIME','BUSY_TIME')))*100,2) USER_TIME from v$osstat b where b.STAT_NAME='USER_TIME'
+	</select>
+	<select id="SYS_TIME">
+	    select round((b.VALUE/(select sum(o.VALUE)  from v$osstat o where o.STAT_NAME in('IDLE_TIME','BUSY_TIME')))*100,2) SYS_TIME from v$osstat b where b.STAT_NAME='SYS_TIME'
+	</select>
+	<select id="DB_CPU">
+	    select round(SUM(s.VALUE/1000000)/(select SUM(o.VALUE/100)  from v$osstat o where o.STAT_NAME in('IDLE_TIME','BUSY_TIME'))*100,2) DB_CPU from v$sess_time_model s where s.STAT_NAME='DB CPU' group by s.STAT_NAME
+	</select>
+	<select id="IOPS">
+	    select sum(value) IOPS from v$sysstat where name in('physical read total IO requests','physical write total IO requests')
+	</select>
+	<select id="IO_SPEED">
+	    select round(sum(value)/1024/1024,2) IO_SPEED from v$sysstat where name in('physical read total bytes','physical write total bytes')
+	</select>
+	<select id="MEMORY_USAGE_PERCENT">
+	    select round(((select sum(a.current_size) from v$sga_dynamic_components a)/sum(b.value))*100,2) MEMORY_USAGE_PERCENT from v$sga b group by 1
+	</select>
+	<select id="SERVER_STATE">
+	    select status SERVER_STATE from v$instance
+	</select>
+	<!--  <select id="REDO_LOG_PERCENT">
+	    SELECT decode(LE.lesiz,0,0,round(100*cp.cpodr_bno/LE.lesiz,2)) REDO_LOG_PERCENT from x$kcccp cp, x$kccle le WHERE LE.leseq =CP.cpodr_seq
+	</select>-->
+	<select id="RESPONSE_TIME">
+	    select round(VALUE,2) RESPONSE_TIME from SYS.V_$SYSMETRIC where METRIC_NAME='Response Time Per Txn'
+	</select>
+	<select id="SESSION_COUNT">
+	    select count(*) SESSION_COUNT from v$session where username is not null
+	</select>
+	<select id="SGA_HIT">
+	    select round(sum(pinhits)/sum(pins)*100,2) SGA_HIT from v$librarycache
+	</select>
+</sql-Maping>

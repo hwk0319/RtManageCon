@@ -1,0 +1,378 @@
+.conn{
+	height:100%;
+	width:100%;
+	overflow:auto;
+	
+}
+.info {
+	width: 100%;
+	height: 35%;
+}
+
+.state {
+	height: 95%;
+	margin-top: 3px;
+	width: 100%;
+}
+
+.icon {
+	float: left;
+	margin-left: 1%;
+	height: 100%;
+	width: 26%;
+	position:relative;
+}
+.oncover{
+	position:absolute;
+	width:19%;
+	height:54%;
+	left:23%;
+	top:10%;
+}
+.equipment {
+	text-align: center;
+	color: #fff;
+	height: 22%;
+	width:90%;
+	font-size: 14px;
+	position:absolute;
+	bottom:0;
+}
+
+.emergency {
+	float: left;
+	margin-left: 1%;
+	height: 100%;
+	width: 71%;
+	border: 1px solid #CCC;
+	border-radius: 5px;
+}
+.warninfo{
+	width: 100%;
+	height: 86%;
+}
+.warninfo .warntitle{
+	height: 21.6%;
+	width: 100%;
+	font-size:12px;
+	line-height:100%;
+	color:#000;
+}
+.warninfo span{
+	float:left;
+}
+.temp{
+	width:32%;
+	margin-left:1%;
+	margin-top:0.5%;
+	height:95%;
+	float:left;
+	font-size:12px;
+}
+.value div{
+	float:left;
+}
+.tempvalue,.consvalue,.volevalue,.boxvalue,.powervalue,.fanvalue{
+	width:95%;
+	height:90%;
+	margin:1%
+}
+.cputemp,.voltemp,.powstemp{
+	width:99%;
+	height:48%;
+	
+	border:1px solid #ddd;
+}
+.wt_line{
+	display:block;
+	width:1.5%;
+	height:80%;
+	margin-left:2%;
+	margin-top:1%;
+	background-color:#3b8cbc;
+}
+.wt_txt{
+	margin-left:1%;
+	margin-top:1%;
+	font-size:10px;
+}
+.cpuval{
+	width:42%;
+	height: 38%;
+	margin:0.8% 0 0 3%;
+	float: left;
+	background:url('../img/cput_green.png')no-repeat;
+	background-size:100% 100%;
+}
+.cpu_red{
+	background:url('../img/temp_bg.png')no-repeat;
+	background-size:100% 100%;
+}
+.line_red{
+	background-color:red;
+}
+.temppvalue{
+	width:30%;
+	height:80%;
+	margin:5% 0 0 50% ;
+}
+.powerdvalue{
+	margin-left:13%;
+	width:31%;
+	height:75%;
+	border-radius:5px;
+	/* background-color:#f7f7f7; */
+	float:left;
+}
+.pvimg{
+	margin:0 auto;
+	margin-top:10%;
+	width:85%;
+	height:50%;
+	background:url('../img/power_green.png')no-repeat;
+	background-size:100% 100%;
+}
+.pvimg_red{
+	background:url('../img/power_red.png')no-repeat;
+	background-size:100% 100%;
+}
+
+.pvtxt{
+	width:100%;
+	height:40%;
+	text-align:center;
+	font-size:14px;
+}
+.consdval{
+	margin-left:6%;
+	width:35%;
+	height:70%;
+	border-radius:5px;
+	border:1px dashed #bdbcbc;
+	float:left;
+}
+.border_redline{
+	border:1px dashed red;
+}
+.cvtxt{
+	width:100%;
+	height:45%;
+	margin-top:20%;
+	text-align:center;
+	font-size:18px;
+	color:#488fbf;
+}
+.consdval span{
+	display:block;
+	width:70%;
+	text-align:right;
+}
+.fanvalue{
+	padding-left:7%;
+}
+.fandval{
+	height:37%;
+	width:17%;
+	border-radius:5px;
+	text-align:center;
+	line-height:30px;
+	margin:0.5px 1px;
+	float:left;
+	border: 1px dashed #bdbcbc;
+}
+.voledvalue{
+	height:37%;
+	width:17%;
+	border-radius:5px;
+	text-align:center;
+	line-height:30px;
+	margin:0.5px 1px;
+	float:left;
+	border: 1px dashed #bdbcbc;
+}
+.font_red{
+	color:red;
+}
+.boxtemp,.powktemp,.fantemp{
+	margin-top:1%;
+	width:99%;
+	height:48%;
+	border:1px solid #ddd;
+}
+.boxtempvalue{
+	margin:0 auto;
+	width:60%;
+	height:70%;
+	border-radius:5px;
+}
+.bv_img{
+	width:38%;
+	height:100%;
+	float:left;
+	background:url('../img/boxtemp_green.png')no-repeat;
+	background-size:100% 100%;
+}
+.bvimg_red{
+	background:url('../img/boxtemp_red.png')no-repeat;
+	background-size:100% 100%;
+}
+.bv_txt{
+	width:62%;
+	height:100%;
+	float:left;
+}
+.bv_txt span{
+	margin-left:20%;
+	margin-top:10%;
+	font-size:22px;
+	color:#488fbf;
+	float:left;
+}
+#server_param {
+	width: 100%;
+	height: 100%;
+	font-size: 12px;
+}
+#server_param td img,#server_param td div,#server_param td span{
+	float:left;
+}
+#server_param td{
+	border:1px solid red;
+}
+#server_param td span{
+	width: 12%;
+	min-width: 85px;
+}
+#server_param td div{
+	width: 8%;
+	height:10px;
+}
+.chart {
+	height: 40%;
+	width: 98%;
+	margin-left: 1%;
+	border: 1px solid #CCC;
+	border-radius: 5px;
+}
+
+.titleinfo {
+	height: 100%;
+	float: left;
+	line-height: 26px;
+}
+
+.title {
+	height: 30px;
+	width: 100%;
+	background-color: #63bfe2;
+	color: #fff;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.title img {
+	margin-left: 10px;
+	margin-top: 4px;
+}
+.tit{
+/* 	margin-left: 10px; */
+	padding:5px 0;
+	/* font-weight:bold; */
+	color:#fff;
+	background-color:#63bfe2;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+.titline{
+	width:100%;
+	height:1px;
+	border-top:1px solid #ccc;
+}
+.maindisc,.mainibp,.mainip,.mainssd,.mainsoft,.mainraid{
+	width:98%;
+	margin-top: 10px;
+	margin-left: 1%;
+	border:1px solid #ccc;
+	/* background-color: #d2ebf3; */
+}
+.mainsoft{
+	width:98%;
+	height:225px;
+	/* background-color:#d2ebf3; */
+	overflow: auto;
+	border-radius: 5px;
+}
+.consoft{
+	margin-top:5px;
+	font-size:14px;
+	color:#000;
+}
+.soft{
+	width:95%;
+	margin-left:2%;
+	height:85px;
+}
+.ssddata,.ibipdata,.ipdata,.discdata,.raiddata{
+	display:none;
+	width:97%;
+	font-size:12px;
+	height:20px;
+	line-height:20px;
+	text-align:right;
+}
+
+.showsoft{
+	width:calc(100% / 8 - 10px);
+	float: left;
+	height: 145px;
+	margin: 10px 10px 0 0;
+	padding-top:10px;
+	overflow: hidden;
+	cursor: pointer;
+	/* padding: 1px; */
+	border:1px solid #888;
+	border-radius:5px;
+	border:solid thin #d1d5de;
+	font-size:14px;
+	text-align: center;
+}
+.showsoft:hover{
+	box-shadow:#666 0px 0px 10px;  
+  -webkit-box-shadow:#666 0px 0px 10px;  
+  -moz-box-shadow:#666 0px 0px 10px;
+	cursor:pointer;
+}
+.showsoft .dbinfoimg{
+	width:60%; 
+	height: 75px; 
+	margin:0 auto;
+	background: url("../../../../monihome/imgs/datebase.png") 0% 0% / 100% 100% no-repeat;
+}
+.showsoft .infotxt{
+	margin-top:10px;
+	width:100%; 
+	height: 50px; 
+	overflow: hidden;
+	white-space: nowrap;
+}
+.boxdvalue{
+	margin-left:27%;
+	margin-top:3%;
+	width:40%;
+	height:80%;
+	font-size:18px;
+	line-height:34px;
+	text-align:center;
+	border:1px solid green;
+	border-radius:50%;
+}
+.setnull{
+	font-size:14px;
+}
+.nodataimg{
+	width:30%;
+	height:80%;
+	margin:0 auto;
+	background:url('../img/nodata.png')no-repeat;
+	background-size:100% 100%;
+}

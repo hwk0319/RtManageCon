@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.module.device.dao.DeviceDao">
+
+	<select id="search" parameterType="DevicesPo"  resultType="DevicesPo">
+		select mgt_device.*, a.name as opersysname, b.name as factoryname, c.name as devicetypename, d.name as positionName from mgt_device 
+		left join sys_dict a on to_number(a.value,'9999') =  mgt_device.opersys  and  a.type = 'device_opersys'
+		left join sys_dict b on b.value =  mgt_device.factory  and  b.type in ('server_factory','loadB_factory')
+		left join sys_dict c on to_number(c.value,'9999') =  mgt_device.devicetype  and  c.type = 'device_type'
+		left join sys_dict d on to_number(d.value,'9999') =  mgt_device.position  and  d.type = 'inOut_type'
+		where 1=1 and mgt_device.use_flag = '1'
+		<if test="po.id == null or po.id == ''" >and mgt_device.parent_id = '0' </if>
+		<if test="po.id != null and po.id != ''" > and mgt_device.id =#{po.id}</if>
+		<if test="po.ids != null and po.ids != ''" > and mgt_device.id not in 
+			<foreach collection="po.idList" item="idlist" index="index" open="(" close=")" separator=",">
+		      #{idlist}
+		    </foreach>
+		</if>
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'"><if test="po.uid != null and po.uid != ''" > and mgt_device."UID" like concat(concat('%',#{po.uid}),'%')</if> </when>
+	        <otherwise><if test="po.uid != null and po.uid != ''" >and mgt_device.uid like concat(concat('%',#{po.uid}),'%')</if> </otherwise>
+     	</choose>
+		<if test="po.devicetype != null and po.devicetype != '' "> and mgt_device.devicetype = #{po.devicetype}</if>
+		<if test="po.name != null and po.name != ''" >and mgt_device.name like concat(concat('%',#{po.name}),'%')</if>
+		<if test="po.factory != null and po.factory != ''" >and mgt_device.factory = #{po.factory}</if>
+		<if test="po.in_ip != null and po.in_ip != ''" >and mgt_device.in_ip like concat(concat('%',#{po.in_ip}),'%')</if>
+		<if test="po.group_id != null and po.group_id != ''" >and mgt_device.id in (select dev_id from mgt_group_dev_sys where group_id=#{po.group_id})</if>
+		<if test="po.sys_id != null and po.sys_id != ''" >and mgt_device.id in (select dev_id from mgt_system_device where sys_id=#{po.sys_id})</if>
+		<if test="po.position != null and po.position != '' "> and mgt_device.position = #{po.position}</if>
+		order by mgt_device.id asc
+	</select>
+
+	<insert id="insert"  parameterType="DevicesPo" >
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">
+	        		insert into mgt_device(
+		             devicetype, sn, in_ip, in_username, in_password, 
+		            out_ip, out_username, out_password, opersys, assetno, position, 
+		            use_flag, create_by, create_date, remark, parent_id, factory, 
+		            "MODEL", healthstatus, temperature, life, port, "NAME")
+		   		  values ( #{po.devicetype,jdbcType=INTEGER}, #{po.sn,jdbcType=VARCHAR}, #{po.in_ip,jdbcType=VARCHAR}, #{po.in_username,jdbcType=VARCHAR}, #{po.in_password,jdbcType=VARCHAR}, 
+		            #{po.out_ip,jdbcType=VARCHAR}, #{po.out_username,jdbcType=VARCHAR}, #{po.out_password,jdbcType=VARCHAR}, #{po.opersys,jdbcType=INTEGER}, #{po.assetno,jdbcType=VARCHAR}, #{po.position,jdbcType=VARCHAR}, 
+		            '1', #{po.create_by,jdbcType=VARCHAR}, sysdate, #{po.remark,jdbcType=VARCHAR}, #{po.parent_id,jdbcType=VARCHAR}, #{po.factory,jdbcType=VARCHAR},
+		            #{po.model,jdbcType=VARCHAR}, #{po.healthstatus,jdbcType=VARCHAR}, #{po.temperature,jdbcType=INTEGER}, #{po.life,jdbcType=VARCHAR}, #{po.port,jdbcType=VARCHAR}, #{po.name,jdbcType=VARCHAR})
+	        </when>
+	        <otherwise>
+	        	insert into mgt_device(
+			            devicetype, sn, in_ip, in_username, in_password, 
+			            out_ip, out_username, out_password, opersys, assetno, position, 
+			            use_flag, create_by, create_date, remark, parent_id, factory, 
+			            model, healthstatus, temperature, life, port, name)
+			     values ( #{po.devicetype}, #{po.sn}, #{po.in_ip}, #{po.in_username}, #{po.in_password}, 
+			            #{po.out_ip}, #{po.out_username}, #{po.out_password}, #{po.opersys}, #{po.assetno}, #{po.position}, 
+			            '1', #{po.create_by}, now(), #{po.remark}, #{po.parent_id}, #{po.factory},
+			            #{po.model}, #{po.healthstatus}, #{po.temperature}, #{po.life}, #{po.port}, #{po.name})
+	        </otherwise>
+	     </choose>
+	     <selectKey order="AFTER" resultType="java.lang.Integer" keyProperty="po.id">
+             <choose>
+		        <when  test="po.DBTYPE =='ORACLE'">SELECT mgt_device_id_seq.NEXTVAL-1 from DUAL</when>
+		        <otherwise>select last_value from mgt_device_id_seq</otherwise>
+	     	 </choose>
+        </selectKey> 
+	</insert>	
+	
+	<update id="update"  parameterType="DevicesPo">
+	 update mgt_device
+   	 set 
+   	   devicetype=#{po.devicetype,jdbcType=INTEGER}, 
+   	   sn=#{po.sn,jdbcType=VARCHAR}, 
+   	   in_ip=#{po.in_ip,jdbcType=VARCHAR}, 
+   	   in_username=#{po.in_username,jdbcType=VARCHAR}, 
+	   <if test="po.in_password != null and po.in_password != '' ">
+		 in_password=#{po.in_password,jdbcType=VARCHAR},
+       </if>
+       out_ip=#{po.out_ip,jdbcType=VARCHAR}, 
+       out_username=#{po.out_username,jdbcType=VARCHAR},
+	   <if test="po.out_password != null and po.out_password != '' ">
+		 out_password=#{po.out_password,jdbcType=VARCHAR}, 
+       </if>
+       opersys=#{po.opersys,jdbcType=INTEGER}, 
+       assetno=#{po.assetno,jdbcType=VARCHAR}, 
+<!--        position=#{po.position,jdbcType=VARCHAR},  -->
+       update_by=#{po.create_by,jdbcType=VARCHAR}, 
+       update_date=#{po.update_date}, 
+       remark=#{po.remark,jdbcType=VARCHAR},
+       parent_id=#{po.parent_id,jdbcType=VARCHAR},
+       factory=#{po.factory,jdbcType=VARCHAR},
+       model=#{po.model,jdbcType=VARCHAR},
+       port=#{po.port,jdbcType=VARCHAR}, 
+       name=#{po.name,jdbcType=VARCHAR}
+	 where id=#{po.id}
+	</update>
+	
+	<update id="delete"  parameterType="DevicesPo">
+	 update mgt_device 
+	 set 
+		use_flag = '0',
+		update_by=#{po.update_by},
+		update_date=#{po.update_date}
+	 where id = #{po.id}
+	</update>
+	
+	<update id="deleteByUid"  parameterType="DevicesPo">
+	 update mgt_device 
+	 set 
+		use_flag = '0',
+		update_by=#{po.update_by},
+		update_date=#{po.update_date}
+	 where parent_id = #{po.uid}
+	</update>
+	
+	<insert id="insertGroupDev"  parameterType="DevicesPo">
+	 insert into mgt_group_dev_sys(group_id,
+            dev_id, sys_id, use_flag, create_by, create_date,remark)
+     values (#{po.group_id},#{po.id}, #{po.sys_id}, '1', #{po.create_by}, #{po.create_date}, #{po.remark});
+	</insert>	
+	<insert id="insertSysDev"  parameterType="DevicesPo">
+	 insert into mgt_system_device(sys_id,
+            dev_id, use_flag, create_by, create_date,remark)
+     values (#{po.sys_id}, #{po.id}, '1', #{po.create_by}, #{po.create_date}, #{po.remark});
+	</insert>
+	
+	<select id="searchIndex" parameterType="DevicesPo"  resultType="DevicesPo">
+		select * from mon_deviceindex where use_flag = '1' and uid={po.uid}
+		order by mon_deviceindex.id desc
+	</select>
+	
+	<select id="search2" parameterType="DevicesPo"  resultType="DevicesPo">
+		select * from mgt_device where use_flag = '1'
+		<if test="po.id != null and po.id != ''" > and mgt_device.id =#{po.id}</if>
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'"><if test="po.uid != null and po.uid != ''" >and mgt_device."UID"=#{po.uid} </if> </when>
+	        <otherwise><if test="po.uid != null and po.uid != ''" >and mgt_device.uid=#{po.uid}</if></otherwise>
+     	</choose>
+		order by id desc
+	</select>
+	
+	<select id="findsysnum" parameterType="DevicesPo"  resultType="Integer">
+		select count(*) from mgt_system_device
+		where 1=1
+		and mgt_system_device.use_flag = '1'
+		and mgt_system_device.dev_id = #{po.id}
+	</select>
+	<select id="findmonnum" parameterType="DevicesPo"  resultType="Integer">
+		select count(*) from mon_deviceindex
+		where 1=1
+		and mon_deviceindex.use_flag = '1'
+		and mon_deviceindex."UID" = #{po.uid}
+	</select>
+	<select id="isDevUsed" parameterType="DevicesPo"  resultType="Integer">
+		select count(*) from mgt_device md
+		LEFT JOIN mgt_system_device msd ON msd.dev_id = md."id" and msd.use_flag = '1'
+		LEFT JOIN mon_deviceindex mdi ON mdi."UID" = md."UID"
+		where 1=1
+		and md.use_flag = '1'
+		and msd.use_flag = '1'
+		and mdi.use_flag = '1'
+		and md."UID" = #{po.uid}
+	</select>
+	
+	<select id="searchDeviceInfo" parameterType="DevicesPo"  resultType="DevicesPo">
+		select mgt_device.*, a.name as devicetypename, b.name as factoryname from mgt_device 
+ 		left join sys_dict a on to_number(a.value,'9999') =  mgt_device.devicetype  and  a.type = 'device_type'
+ 		left join sys_dict b on b.value =  mgt_device.factory  and  b.type = 'server_factory'
+		where 1=1 and mgt_device.use_flag = '1'
+		and mgt_device.parent_id = #{po.uid}
+		order by mgt_device.id asc
+	</select>
+	
+	<select id="searchPoById" parameterType="DevicesPo"  resultType="DevicesPo">
+		select * from mgt_device 
+		where 1=1 and mgt_device.use_flag = '1'
+		and mgt_device.id = #{po.id}
+	</select>
+	
+	<select id="searchById" parameterType="DevicesPo"  resultType="DevicesPo">
+		select mgt_device.*, a.name as opersysname, b.name as factoryname, c.name as devicetypename
+	    from mgt_device
+	    left join sys_dict a on to_number(a.value,'9999') =  mgt_device.opersys  and  a.type = 'device_opersys'
+	    left join sys_dict b on to_number(b.value,'9999') =  mgt_device.factory  and  b.type = 'server_factory'
+	    left join sys_dict c on to_number(c.value,'9999') =  mgt_device.devicetype  and  c.type = 'device_type'
+	    where 1 = 1
+	    and mgt_device.use_flag = '1'
+	    and mgt_device.id = #{po.id}
+	</select>
+	
+	<update id="deleteFuShuDev"  parameterType="DevicesPo">
+	 update mgt_device 
+	 set 
+		use_flag = '0',
+		update_by=#{po.update_by},
+		update_date=#{po.update_date}
+	 where id in 
+	 <foreach collection="po.idList" index="index" item="item" open="(" separator="," close=")">
+		#{item}
+	</foreach>
+	</update>
+	
+	<select id="searchMaxNum" parameterType="DevicesPo"  resultType="Integer">
+		select count(*) from mgt_device 
+		where 1=1
+		and use_flag = '1'
+		and parent_id = #{po.uid}
+		and devicetype = #{po.devicetype}
+	</select>
+	
+	<select id="searchFactory" parameterType="DevicesPo"  resultType="DictPo">
+		select * from sys_dict
+		where 1=1 
+		<if test="po.devicetype == 1" >and type = 'server_factory' and value = #{po.factory}</if>
+		<if test="po.devicetype == 2" >and type = 'switchboard_factory' and value = #{po.factory}</if>
+	</select>
+	<update id="deleteSystemDev"  parameterType="DevicesPo">
+		 update mgt_system_device 
+		 set 
+			use_flag = '0',
+			update_by=#{po.update_by},
+			update_date=#{po.update_date}
+		 where dev_id = #{po.id}
+	</update>
+	
+	<update id="deleteGroupDev"  parameterType="DevicesPo">
+		 update mgt_group_dev_sys 
+		 set 
+			use_flag = '0',
+			update_by=#{po.update_by},
+			update_date=#{po.update_date}
+		 where dev_id = #{po.id}
+	</update>
+</mapper>

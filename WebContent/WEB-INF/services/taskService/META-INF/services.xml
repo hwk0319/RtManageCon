@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- http://192.168.10.31:8080/RtManageCon/services/TaskService?wsdl -->
+<serviceGroup>
+<service name="TaskService">
+	<description>运行步骤进度描述</description>
+	<parameter name="InflowSecurity">  
+    <action>  
+        <passwordCallbackClass>com.rampart.WsServiceAuthHandler</passwordCallbackClass>  
+    </action>  
+	</parameter>
+	<parameter name="OutflowSecurity">  
+	    <action>  
+	        <items>UsernameToken</items>  
+	        <user>administrator</user>  
+	        <passwordCallbackClass>com.rampart.client.ClientAuthHandler  
+	        </passwordCallbackClass>  
+	    </action>  
+	</parameter>
+	<parameter name="ServiceObjectSupplier">
+		org.apache.axis2.extensions.spring.receivers.SpringServletContextObjectSupplier
+	</parameter>
+	<parameter name="SpringBeanName">taskSoapService</parameter>
+	<operation name="taskRunResult">
+		<messageReceiver class="org.apache.axis2.rpc.receivers.RPCMessageReceiver" />
+	</operation>
+	<operation name="saveTaskLog">
+		<messageReceiver class="org.apache.axis2.rpc.receivers.RPCMessageReceiver" />
+	</operation>
+     <messageReceivers>
+        <messageReceiver mep="http://www.w3.org/2004/08/wsdl/in-only"
+                         class="org.apache.axis2.rpc.receivers.RPCInOnlyMessageReceiver"/>
+        <messageReceiver mep="http://www.w3.org/2004/08/wsdl/in-out"
+                         class="org.apache.axis2.rpc.receivers.RPCMessageReceiver"/>
+    </messageReceivers>
+</service> 
+<!-- http://192.168.10.31:8080/RtManageCon/services/I6000?wsdl -->
+<service name="I6000">
+	<description>I6000接口</description>
+	<parameter name="ServiceObjectSupplier">
+		org.apache.axis2.extensions.spring.receivers.SpringServletContextObjectSupplier
+	</parameter>
+	<parameter name="SpringBeanName">i6000SoapService</parameter>
+	<operation name="getKPIValue">
+		<messageReceiver class="org.apache.axis2.rpc.receivers.RPCMessageReceiver" />
+	</operation>
+     <messageReceivers>
+        <messageReceiver mep="http://www.w3.org/2004/08/wsdl/in-only"
+                         class="org.apache.axis2.rpc.receivers.RPCInOnlyMessageReceiver"/>
+        <messageReceiver mep="http://www.w3.org/2004/08/wsdl/in-out"
+                         class="org.apache.axis2.rpc.receivers.RPCMessageReceiver"/>
+    </messageReceivers>
+</service>  
+</serviceGroup>   

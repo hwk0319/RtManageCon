@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.taskmanager.dao.TaskLogDao">
+<select id="getTaskLogByTaskId" parameterType="int" resultType="com.nari.taskmanager.po.TaskLog">
+SELECT
+	task_log_taskId  AS taskId,
+	task_log_stepId AS stepId,
+	to_char(task_log_time, 'YYYY-MM-DD HH24:MI:SS') AS logTime,
+	task_log_level AS logLevel,
+	task_log_hostIp AS hostIp,
+	task_log_host AS hostName,
+	task_log_detial AS logDetial
+FROM
+	task_log_value
+WHERE
+	task_log_taskId = #{taskId}
+order by id
+</select>
+<insert id="insertTaskLog" parameterType="com.nari.taskmanager.po.TaskLog">
+INSERT INTO task_log_value (task_log_taskId, task_log_stepId, task_log_time, task_log_level, task_log_hostIp, task_log_host, task_log_detial) 
+VALUES (#{taskLog.taskId}, #{taskLog.stepId}, to_timestamp(#{taskLog.logTime}, 'YYYY-MM-DD HH24:MI:SS:ff'), #{taskLog.logLevel}, #{taskLog.hostIp},#{taskLog.hostName} , #{taskLog.logDetial})
+
+</insert>
+
+<delete id="clearTaskLog" parameterType="int">
+	delete from task_log_value where task_log_taskId=#{taskId}
+</delete>
+	
+	
+	
+</mapper>

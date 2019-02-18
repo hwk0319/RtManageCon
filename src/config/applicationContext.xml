@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.1.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.1.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.1.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd "
+	default-lazy-init="true">
+
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+	<!-- Properties文件读取配置，base的properties -->
+	<context:property-placeholder location="classpath:config/jdbc.properties" />
+
+	<context:component-scan base-package="com.nari">
+	</context:component-scan>
+	
+	<bean id="configReader" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<value>classpath:config/jdbc.properties</value>
+		</property>
+		<property name="propertiesPersister">
+			<bean class="com.nari.util.MyPropertiesPersist" />
+		</property>
+		<property name="ignoreResourceNotFound" value="true" />
+	</bean>
+	<!-- dataSource 配置 -->
+	<bean id="dataSource" class="com.nari.common.config.DecryptDriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}"></property>
+		<property name="url" value="${jdbc.driverUrl}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.mm}"></property>
+	</bean>
+	<!-- 缓存配置 -->
+	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation" value="classpath:${ehcache.configFile}" />
+	</bean>
+	<bean id="shiroCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManager" ref="cacheManager" />
+	</bean>
+
+	<!-- 在使用mybatis时，spring通过sqlSessionFactoryBean来管理mybatis的sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="com.nari.common.config.PackagesSqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="typeAliasesPackage" value="com.nari" />
+		<property name="mapperLocations">
+			<array>
+				<value>classpath*:com/nari/**/*.xml</value>
+				<!-- 所有的*.xml文件在jar包里面的路径 -->
+				<value>classpath*:com/nari/dao/CodeValueMapper.xml</value>			
+				<value>classpath*:com/nari/dao/DbConnectMapper.xml</value>			
+<!-- 				<value>classpath*:com/nari/dao/LoginMonitor.xml</value>			 -->
+				<value>classpath*:com/nari/dao/oprtLogMapper.xml</value>			
+				<value>classpath*:com/nari/dao/sysParamMapper.xml</value>			
+				<value>classpath*:com/nari/dao/SystemManDao.xml</value>			
+				<value>classpath*:com/nari/dao/SystemMenuMapper.xml</value>			
+				<value>classpath*:com/nari/dao/userMapper.xml</value>
+				<value>classpath*:com/nari/module/address/mapper/AddressMapper.xml</value>			
+				<value>classpath*:com/nari/module/common/mapper/CommonMapper.xml</value>			
+<!-- 				<value>classpath*:com/nari/module/device/mapper/DeviceMapper.xml</value>			 -->
+<!--  				<value>classpath*:com/nari/module/deviceindex/mapper/DeviceindexMapper.xml</value>			 -->
+				<value>classpath*:com/nari/module/dict/mapper/DictMapper.xml</value>
+<!-- 				<value>classpath*:com/nari/module/doublemgt/mapper/DoublemgtMapper.xml</value>			 -->
+				<value>classpath*:com/nari/module/general/mapper/GeneralMapper.xml</value>			
+<!-- 				<value>classpath*:com/nari/module/group/mapper/GroupMapper.xml</value>			 -->
+				<value>classpath*:com/nari/module/healthModel/mapper/healthmodelMapper.xml</value>			
+				<value>classpath*:com/nari/module/heathScore/mapper/HeathcheckMapper.xml</value>			
+				<value>classpath*:com/nari/module/heathScoreView/mapper/HeathScoreViewMapper.xml</value>		
+				<value>classpath*:com/nari/module/indextype/mapper/IndexMapper.xml</value>			
+				<value>classpath*:com/nari/module/indextype/mapper/IndextypeMapper.xml</value>			
+				<value>classpath*:com/nari/module/model/mapper/ModelMapper.xml</value>			
+				<value>classpath*:com/nari/module/noticerule/mapper/noticeruleMapper.xml</value>				
+				<value>classpath*:com/nari/module/operationlog/mapper/OperationlogMapper.xml</value>				
+<!-- 				<value>classpath*:com/nari/module/paramdb/mapper/paramdbMapper.xml</value>					 -->
+				<value>classpath*:com/nari/module/reviewmgt/mapper/ReviewMapper.xml</value>	
+<!-- 				<value>classpath*:com/nari/module/systemmgt/mapper/SystemmgtMapper.xml</value> -->
+				<value>classpath*:com/nari/module/thresholdmgt/mapper/ThresholdMapper.xml</value>				
+				<value>classpath*:com/nari/module/warnlog/mapper/WarnlogMapper.xml</value>					
+<!-- 				<value>classpath*:com/nari/module/warnrule/mapper/WarnruleMapper.xml</value>					 -->
+<!-- 				<value>classpath*:com/nari/monitormgt/monihome/active/mapper/ActiveMapper.xml</value>					 -->
+<!-- 				<value>classpath*:com/nari/monitormgt/monihome/doublemon/mapper/doubleMapper.xml</value>					 -->
+<!-- 				<value>classpath*:com/nari/monitormgt/monihome/group/mapper/GroupsMapper.xml</value>					 -->
+<!-- 				<value>classpath*:com/nari/monitormgt/monihome/servers/mapper/ServersMapper.xml</value>					 -->
+			</array>
+		</property>
+		<property name="plugins">
+			<array>
+				<bean class="com.github.pagehelper.PageInterceptor">
+					<property name="properties">
+						<!--使用下面的方式配置参数，一行配置一个 -->
+						<value>
+							params=pageNum=currentPage;pageSize=pageSize;count=totalRecords;pageSizeZero=needPage
+						</value>
+					</property>
+				</bean>
+			</array>
+		</property>
+	</bean>
+	<!-- mybatis自动扫描加载映射文件/接口 basePackage：指定sql映射文件/接口所在的包路径(自动扫描) -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.nari.dao,com.nari.taskmanager.dao,com.nari.module.*.dao,com.nari.monitormgt.monihome.*.dao"></property>
+	</bean>
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0">
+			<ref bean="sqlSessionFactory" />
+		</constructor-arg>
+	</bean>
+	
+	<!-- 事务管理器配置 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 开启事务控制的注解支持 -->
+	<tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager" />
+	
+	<!-- taskmanager-begin -->
+	<!-- quartz -->
+	<bean id="scheduler" lazy-init="false" autowire="no"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="autoStartup" value="true" />			<!--自动启动 -->
+		<property name="startupDelay" value="20" />
+	</bean>
+
+ 	<bean id="taskManagerSchedule" class="com.nari.taskmanager.quartz.TaskManagerSchedule"
+		init-method="init" destroy-method="destroy"> 
+		<property name="scheduler" ref="scheduler"></property>
+	</bean>
+	<bean id="zkTaskWatcher" class="com.nari.taskmanager.watcher.ZKTaskWatcher"
+		init-method="startWatcher">
+	</bean>
+	<!-- taskmanager-end -->
+
+	<!-- 启动时创建zk节点，本地使用可注释 -->
+	<bean id="test" class="com.nari.util.startupCall" />
+	<!-- 系统运行时间 -->
+	<bean id="startTime" class="com.nari.util.startTime" />
+</beans>

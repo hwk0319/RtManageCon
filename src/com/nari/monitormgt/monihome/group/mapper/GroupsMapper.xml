@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.monitormgt.monihome.group.dao.GroupsDao">
+
+	<select id="search" parameterType="GroupsPo"  resultType="GroupsPo">
+	<if test = "po.searchType == 'double'">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+				select * from mgt_double_group 
+				right join mgt_group on mgt_group.id = mgt_double_group.group_id
+				where 1=1 and mgt_double_group.use_flag = '1' and mgt_group.use_flag = '1'
+				<if test="po.searchId != null and po.searchId != ''">
+				and mgt_double_group.double_id = #{po.searchId}
+				</if>
+				<if test="po.searchText != null and po.searchText != ''">
+				and (mgt_group."UID" like concat(concat('%',#{po.searchText}),'%') 
+				or mgt_group.name like concat(concat('%',#{po.searchText}),'%'))
+				</if>
+			</when>
+			<otherwise>
+				select * from mgt_double_group 
+				right join mgt_group on mgt_group.id = mgt_double_group.group_id
+				where 1=1 and mgt_double_group.use_flag = true and mgt_group.use_flag = true
+				and mgt_double_group.double_id = #{po.searchId}
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_group.uid like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</otherwise>
+		</choose>
+	</if>	
+	<if test = "po.searchType == 'cluster'">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+				select * from mgt_cluster_group 
+				right join mgt_group on mgt_cluster_group.group_id = mgt_group.id
+				where 1=1 and mgt_cluster_group.use_flag = '1'
+				and mgt_group.use_flag = '1'
+				and mgt_cluster_group.cluster_id = #{po.searchId}
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_group."UID" like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</when>
+			<otherwise>
+				select * from mgt_cluster_group 
+				right join mgt_group on mgt_cluster_group.group_id = mgt_group.id
+				where 1=1 and mgt_cluster_group.use_flag = true
+				and mgt_group.use_flag = true
+				and mgt_cluster_group.cluster_id = #{po.searchId}
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_group.uid like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</otherwise>
+		</choose>
+	</if>
+	<if test = "po.searchType == 'integrate'">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+				select mgt_integrate_group.integrate_id,mgt_integrate_group.group_id,mgt_group.id,mgt_group."UID",mgt_group.name 
+				from mgt_integrate_group
+				left join mgt_integrate on mgt_integrate_group.integrate_id = mgt_integrate.id
+				left join mgt_group on mgt_integrate_group.group_id = mgt_group.id
+				where 1=1 and mgt_integrate_group.use_flag = '1'
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_group."UID" like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</when>
+			<otherwise>
+				select mgt_integrate_group.integrate_id,mgt_integrate_group.group_id,mgt_group.id,mgt_group.uid,mgt_group.name 
+				from mgt_integrate_group
+				left join mgt_integrate on mgt_integrate_group.integrate_id = mgt_integrate.id
+				left join mgt_group on mgt_integrate_group.group_id = mgt_group.id
+				where 1=1 and mgt_integrate_group.use_flag = true
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_group.uid like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</otherwise>
+		</choose>
+	</if>
+	<if test = "po.searchType == '' || po.searchType == null">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+				select *
+		          from (select m.*, rownum rn
+		                  from (select * from mgt_group
+		                           where 1 = 1
+		                           and use_flag = '1'
+		                           <if test="po.position != null and po.position != '' ">and mgt_group.position = #{po.position}</if>
+		                           <if test="po.searchText != null and po.searchText != ''">
+									and (mgt_group."UID" like concat(concat('%',#{po.searchText}),'%') 
+									or mgt_group.name like concat(concat('%',#{po.searchText}),'%'))
+								   </if>
+		                        )
+		                m) a
+		         where rn between #{po.startTotal} and #{po.endTotal}
+		         order by a.id desc
+			</when>
+			<otherwise>
+				select * from mgt_group where 1=1 and use_flag = true
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_group.uid like concat(concat('%',#{po.searchText}),'%')
+				</if>
+				order by mgt_group.id desc
+				limit #{po.pageSize} offset #{po.startTotal}
+			</otherwise>
+		</choose>
+	</if>
+	</select>
+	
+	<select id="searchTotal" parameterType="GroupsPo"  resultType="Integer">
+	<if test = "po.searchType == 'double'">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			select count(1) as total from mgt_double_group 
+			right join mgt_group on mgt_group.id = mgt_double_group.group_id
+			where 1=1 and mgt_double_group.use_flag = '1' and mgt_group.use_flag = '1'
+			<if test="po.searchId != '' and po.searchId != null">
+				and mgt_group."UID" like concat(concat('%',#{po.searchText}),'%')
+			</if>
+			</when>
+			<otherwise>
+			select count(1) as total from mgt_double_group 
+			right join mgt_group on mgt_group.id = mgt_double_group.group_id
+			where 1=1 and mgt_double_group.use_flag = true and mgt_group.use_flag = true
+			<if test="po.searchId != '' and po.searchId != null">
+				and mgt_group.uid like concat(concat('%',#{po.searchText}),'%')
+			</if>
+			</otherwise>
+		</choose>
+	</if>	
+	<if test = "po.searchType == 'cluster'">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+				select count(1) from mgt_cluster_group 
+				left join mgt_group on mgt_cluster_group.group_id = mgt_group.id and mgt_group.use_flag='1'
+				where 1=1 
+				and mgt_cluster_group.use_flag = '1'
+				<if test="po.searchId != '' and po.searchId != null">
+					and mgt_cluster_group.cluster_id=#{po.searchId}
+				</if>
+				<if test="po.searchText != '' and po.searchText != null">
+					and mgt_group."UID" like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</when>
+			<otherwise>
+				select count(1) from mgt_cluster_group 
+				left join mgt_group on mgt_cluster_group.group_id = mgt_group.id and mgt_group.use_flag=true
+				where 1=1 
+				and mgt_cluster_group.use_flag = true
+				<if test="po.searchId != '' and po.searchId != null">
+					and mgt_cluster_group.cluster_id=#{po.searchId}
+				</if>
+				<if test="po.searchText != '' and po.searchText != null">
+					and mgt_group.uid like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</otherwise>
+		</choose>
+	</if>
+	<if test = "po.searchType == 'integrate'">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+				select count(1) as total from mgt_integrate_group
+				left join mgt_integrate on mgt_integrate_group.integrate_id = mgt_integrate.id
+				left join mgt_group on mgt_integrate_group.group_id = mgt_group.id
+				where 1=1 and mgt_integrate_group.use_flag = '1'
+				<if test="po.searchId != '' and po.searchId != null">
+					and mgt_group."UID" like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</when>
+			<otherwise>
+				select count(1) as total from mgt_integrate_group
+				left join mgt_integrate on mgt_integrate_group.integrate_id = mgt_integrate.id
+				left join mgt_group on mgt_integrate_group.group_id = mgt_group.id
+				where 1=1 and mgt_integrate_group.use_flag = '1'
+				<if test="po.searchId != '' and po.searchId != null">
+					and mgt_group.uid like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</otherwise>
+		</choose>
+	</if>
+	<if test = "po.searchType == '' || po.searchType == null">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+				select count(1) as total from mgt_group 
+				where 1=1 and use_flag = '1'
+				<if test="po.position != null and po.position != '' ">and mgt_group.position = #{po.position}</if>
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_group."UID" like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</when>
+			<otherwise>
+				select count(1) as total from mgt_group 
+				where 1=1 and use_flag = true
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_group.uid like concat(concat('%',#{po.searchText}),'%')
+				</if>
+			</otherwise>
+		</choose>
+	</if>
+	</select>
+	
+	<select id="searchList" parameterType="GroupsPo"  resultType="GroupsPo">
+		<if test = "po.searchType == 'double'">
+			select * from mgt_double_group 
+			right join mgt_group on mgt_group.id = mgt_double_group.group_id
+			where 1=1 and mgt_double_group.use_flag = '1' 
+			and mgt_group.use_flag = '1'
+			and mgt_double_group.double_id = #{po.searchId}
+		</if>	
+		<if test = "po.searchType == 'cluster'">
+		
+		</if>
+		<if test = "po.searchType == 'integrate'">
+			select mgt_integrate_group.integrate_id,mgt_integrate_group.group_id,mgt_group.id,mgt_group.uid,mgt_group.name 
+			from mgt_integrate_group
+			left join mgt_integrate on mgt_integrate_group.integrate_id = mgt_integrate.id
+			left join mgt_group on mgt_integrate_group.group_id = mgt_group.id
+			where 1=1 
+			and mgt_integrate_group.use_flag = '1'
+			<if test="po.searchText != null and po.searchText != ''">
+			and mgt_group."UID" like concat(concat('%',#{po.searchText}),'%')
+			</if>
+		</if>
+		<if test = "po.searchType == '' || po.searchType == null">
+			select * from mgt_group where 1=1 and use_flag = '1'
+			<if test="po.searchText != null and po.searchText != ''">
+			and mgt_group."UID" like concat(concat('%',#{po.searchText}),'%')
+			</if>
+			order by mgt_group.id desc
+		</if>
+	</select>
+</mapper>

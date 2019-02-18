@@ -1,0 +1,16 @@
+.idea/
+.svn/
+.settings/
+.vscode/
+target/
+*.iml
+*GeneratorConfig.xml
+src/test/
+.project
+*.swp
+.DS_Store
+.classpath
+.tgitconfig
+#/Rt-job-executor-samples/Rt-job-executor-sample-spring/.classpath
+#/Rt-job-core/.classpath
+#/Rt-job-admin/.classpath

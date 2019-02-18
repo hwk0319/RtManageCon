@@ -1,0 +1,181 @@
+.search{
+	min-width:600px;
+	margin: 1%;
+	height: auto;
+	width: 98%;
+ 	border: 1px solid #ddd; 
+ 	border-radius:6px;
+/*  	background-color:#DFEFFC; */
+}
+.title{
+	width:100%;
+	height: 1.5em;
+	background-color: #7ab8dd;
+	position: relative;
+	border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+.title span{
+	color:#FFF;
+	font-family:'LiSong Pro Light';
+	font-weight: bold;
+	font-size: 12px;
+	position: absolute;
+	top:12%;
+	left:0.3%;
+}
+.srch_con{
+	width:100%;
+	height:auto;
+	margin-top: 15px;
+}
+.srch_con .prom:first-child{
+	margin-top:3px;
+}
+.prom{
+	width: 60%;
+	height: 2.5em;
+	margin-left:15%; 
+}
+.prom-3{
+	width: 85%;
+	height: 2.5em;
+	margin-left:15%; 
+}
+.prom span,.prom-3 span{
+	font-size:12px;
+	line-height:33px;
+	width:25%;
+	text-overflow:ellipsis; 
+	overflow:hidden; 
+    white-space: nowrap;
+	display:block;
+	float:left
+}
+.prom input,.prom-3 input{
+	width:65%;
+	height:23px;
+	float:left;
+}
+.w_p40{
+		width:40%;
+		float: left;
+ 		margin-left:8%;
+}
+.w_p30{
+		width:30%;
+		float: left;
+ 		margin-left:3%;
+}
+.find{
+	width: 100%;
+	height:2.5em;
+	float:left;
+}
+.find-mid{
+	width: 50%;
+	margin: 0 35%;
+}
+.find-mid button{ 
+	width: 70px;
+	height: 30%;
+	margin-left:5%; 
+	font-size: 12px;
+	border-radius:5px; 
+	background-color: #b4cde6;
+}
+.txt{
+	width: 35%;
+	height: 60%;
+	line-height: 150%;
+	text-align: left;
+}
+.main_list{
+ 	height:auto;
+	width:96%;
+	margin:1%;
+	border:1px solid #aaa; 
+}
+#Act_Buttons .navButton{
+	display:none !important;
+}
+
+#_PubQuery ul li:hover{background: #f6f6f6;}
+
+.prom-2{
+	width:100%;
+	height:50px;
+}
+.prom-2 >div{
+	margin-left:2%;
+	float:left;
+	width:45%;
+	height:50px;
+}
+.text_select,.text_input{
+	position:relative;
+}
+.text_select .text,.text_input .text{
+	position:absolute;
+	/* font-size:14px; */
+	display:inline-block;
+	width:25%;
+	height:40%;
+	left:2%;
+    top: 50%;
+    transform: translate(0,-50%);
+}
+.text_select .select,.text_input .input{
+	position:absolute;
+	width:70%;
+	height:40%;
+	left:30%;
+	top: 50%;
+    transform: translate(0,-50%);
+}
+.select select{
+	width:95% !important;
+}
+.input input{
+	width:88% !important;
+}
+a{
+	text-decoration: none;
+}
+/* 页面底部固定footer */
+.layui-footer {
+	position: fixed;
+	left: 230px;
+	right: 0;
+	bottom: 0;
+	height: 30px;
+	line-height: 30px;
+	padding: 0 15px;
+	text-align:center;
+	color: #908e8e;
+	font-size: 14px;
+	background-color: #e3e5e6;
+	z-index: 999;
+}
+/* chaxun */
+.layui-elem-field {
+    margin-bottom: 10px;
+    padding: 0;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #c1c1c1;
+    margin: 1%;
+    border-radius: 5px;
+}
+.layui-field-box {
+    padding: 5px 15px;
+}
+.layui-elem-field legend {
+    margin-left: 5px;
+    padding: 0 5px;
+    font-size: 13px;
+    font-weight: bold;
+}
+.layui-field-box input[type='text'],select{
+	font-size: 13px;
+}

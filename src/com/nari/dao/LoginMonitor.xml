@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.dao.LoginMonitorDao">
+	
+	<!-- 判断用户是否已经登录 -->
+ 	<select id="findUserByName" parameterType="String" resultType="com.nari.po.LoginMonitor">
+		select * from session_monitor where username=#{username}  
+		<choose>
+	        <when test="DBTYPE =='ORACLE'"> and rownum=1 order by id desc</when>
+	        <otherwise>order by id desc limit 1</otherwise>
+	    </choose>
+ 	</select>
+ 	<!-- 判断一台电脑上是否只登录了一个用户 -->
+ 	<select id="findUserByIp" parameterType="String" resultType="com.nari.po.LoginMonitor">
+		select * from session_monitor where ip=#{ip}
+ 	</select>
+	
+	<insert id="insert" parameterType="LoginMonitor">
+		insert into session_monitor(username,ip,cookie)
+		   values(#{po.username},#{po.ip},#{po.cookie})
+	</insert>
+	
+	<delete id="delete" parameterType="com.nari.po.LoginMonitor">
+   		delete from session_monitor where ip = #{po.ip}
+   </delete>
+   
+   <select id="findCount" resultType="Integer">
+		SELECT count(*) from session_monitor				
+	</select>
+
+	<select id="findByUsernameNew"  parameterType="String" resultType="com.nari.po.LoginMonitor">
+		select *
+        from (select * from session_monitor where username=#{username} order by id desc)
+        where rownum = 1				
+	</select>
+	
+	<select id="findCookieByUser"  parameterType="com.nari.po.LoginMonitor" resultType="com.nari.po.LoginMonitor">
+		select * from session_monitor 
+		 where ip = #{po.ip} and username = #{po.username}
+		 order by id desc				
+	</select>
+</mapper>

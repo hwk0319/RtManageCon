@@ -1,0 +1,39 @@
+.sty2{
+	font-size: 14px;
+	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	color: #333;
+}
+.sty2 input {
+	border-radius: 4px;
+	padding: 4px 6px;
+	border: 1px solid #ccc;
+}
+.sty2 select{
+	border-radius: 4px;
+	padding: 4px 6px;
+	width: 220px;
+	border: 1px solid #ccc;
+}
+.widget-content{
+	margin: -10px 2px;
+}
+.widget-content button{
+	border-radius: 4px;
+	border: 1px solid #ccc;
+	font-size: 14px;
+	padding: 4px 10px;
+}
+.sty2 a{
+	margin: 7px 0 0 -25px;
+	position: absolute;
+}
+.sty2 img{
+	width:18px;
+	height:18px;
+}
+.dataPicker{
+	width: 180px;
+	vertical-align: middle;
+}
+.icon-search{background-position:-48px 0}
+.icon-edit{background-position:-96px -72px}

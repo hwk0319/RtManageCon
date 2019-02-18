@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.monitormgt.monihome.doublemon.dao.doublemonDao">
+	<select id="getDoubleInfo" parameterType="DoublemgtPo" resultType="DoublemgtPo">
+	   select mg.* from mgt_core mc
+		left join mgt_core_group mcg on mcg.core_id = mc.id
+		left join mgt_group mg on mg.id = mcg.group_id
+		where mcg.core_id = #{po.core_id}
+		and mg.use_flag = '1'
+	</select>
+	
+	<select id="getCoreInfo" parameterType="DoublemgtPo" resultType="DoublemgtPo">
+	   select md.name,mc.id,mc.core from mgt_double md
+		left join mgt_core mc on md.id = mc.double_id
+		where md.use_flag = '1'
+		<if test="po.position != null and po.position != '' "> and md.position = #{po.position}</if>
+	</select>
+	
+    <insert id="insert"  parameterType="doublemonPo" >
+		 insert into mon_indexdata 
+		 	(index_id,"UID",value,record_time) 
+		 values
+			 ('4000000','123456789',#{po.value},sysdate)	
+	</insert>	
+	
+	<select id="select" parameterType="doublemonPo" resultType="Integer">
+	 	select count (1) from mon_indexdata where index_id ='4000000'
+	</select>
+	
+	<update id="update"  parameterType="doublemonPo" >
+		update mon_indexdata
+		set
+		value=#{po.value},
+		record_time=sysdate
+		where index_id='4000000'
+	</update>
+	
+	<select id="getTablespace" parameterType="paramdbPo" resultType="paramdbPo">
+		select max(case index_id when 2010101 then value else '' end) table_name,
+		max(case index_id when 2010102 then value else '' end) table_type,
+		max(case index_id when 2010103 then value else '' end) sum_space,
+		max(case index_id when 2010104 then value else '' end) sum_blocks,
+		max(case index_id when 2010105 then value else '' end) used_space,
+		max(case index_id when 2010106 then value else '' end) used_rate,
+		max(case index_id when 2010107 then value else '' end) free_space
+		from mon_indexdata where "UID" = #{po.uid}
+	</select>
+	
+	<select id="searchDoubleById" parameterType="String" resultType="java.util.Map">
+	 	  select mgt_core.*, mgt_core.id as core_id, mgt_double.id as double_id
+		  from mgt_double
+		  left join mgt_core on mgt_double.id = mgt_core.double_id
+		  where mgt_double.use_flag = '1'
+		  and mgt_core.use_flag = '1' 
+		  <choose>
+		  	<when test="double_id != null and double_id != ''">
+		  		and mgt_double.id = #{double_id}
+		  	</when>
+		  	<otherwise>
+		  		and mgt_double.id=(select max(id) from mgt_double where use_flag='1')
+		  	</otherwise>
+		  </choose>
+		  order by mgt_core.id asc
+	</select>
+	
+	<select id="searchDoubleCoreById" parameterType="java.util.Map" resultType="java.util.Map">
+	 	  select a."ID" as group_id,a.grouptype as grouptype,c."ID" as device_id,
+		       c."UID" as device_uid,c.devicetype,c.sn,c.model_id,c.in_ip,c.out_ip,c.name,
+		       case (select warn_level from mon_warn_log aa
+		          where newest_warntime =
+		                (select max(newest_warntime) from mon_warn_log bb
+		                  where bb.process_status = 0 and bb.device_id = aa.device_id)
+		            and process_status = 0
+		            and device_id = c."UID"
+		            and rownum = 1)
+		         when 1 then 'true-app_green'when 2 then 'true-app_yellow'
+		         when 3 then 'false-app_red'
+		         when 4 then 'false-app_red'
+		         else 'true-app_green'
+		       end as warn_level_bool,
+		       (select value
+		          from mon_indexdata aa
+		         where rownum = 1
+		           and record_time = (select max(record_time) from mon_indexdata bb
+		                               where bb."UID" = aa."UID" and aa.index_id = 1000001)
+		           and "UID" = c."UID"
+		           and index_id = 1000001) as out_val,
+		       (select value
+		          from mon_indexdata aa
+		         where rownum = 1
+		           and record_time = (select max(record_time) from mon_indexdata bb
+		                               where bb."UID" = aa."UID" and aa.index_id = 1000001)
+		           and "UID" = c."UID"
+		           and index_id = 1000002) as in_val
+		  from mgt_group a
+		  left join mgt_group_dev_sys b
+		    on a."ID" = b.group_id
+		  left join mgt_device c
+		    on b.dev_id = c."ID"
+		 where a.use_flag = '1'
+		   and b.use_flag = '1'
+		   and c.use_flag = '1'
+		   and a."ID" in (select group_id from mgt_core_group where core_id = #{core_id})
+	</select>
+	
+	<select id="searchWarnlogByDevUid" parameterType="java.util.Map" resultType="java.util.Map">
+	 	  select warn_level
+		  from mon_warn_log
+		 where rownum = 1
+		   and process_status = 0
+		   and device_id in (select b. "UID" from mgt_system_device a
+		                       left join mgt_system b on a.sys_id = b. "ID"
+		                      where a.use_flag = '1'
+		                        and b.use_flag = '1'
+		                        and b.systype = 1
+		                        and a.dev_id = #{device_uid})
+		 order by newest_warntime desc
+	</select>
+	
+	<select id="searchZhuBeiKuStatus" resultType="java.util.Map">
+	 	   select value as describe, "UID", record_time, index_id
+			 from mon_indexdata
+			 where index_id in (2060010)
+			 and "UID" IN (select "UID" from mgt_system
+			                  where use_flag = '1' and "ID" in 
+			                        (select sys_id from mgt_system_device
+			                                where use_flag = '1' and dev_id in 
+ 			                                <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+ 										          #{item}
+										    </foreach>
+									)
+							) 
+			 and index_id in (2060010, 2060020)
+			 order by mon_indexdata.record_time desc
+	</select>
+	
+	<select id="searchScn" resultType="java.util.Map">
+	 	   select value as scn
+			  from mon_indexdata
+			 where index_id = 2060011
+			   and "UID" IN (select "UID" from mgt_system
+			                  where use_flag = '1' and "ID" in 
+			                  (select sys_id from mgt_system_device
+			                   where use_flag = '1' and dev_id in 
+			                   <foreach index="index" item="item" collection="ids" open="(" separator="," close=")">
+			                   		#{item}
+			                   </foreach>
+			                   )
+			                 )
+			                   
+			   and id = (select max(id) from mon_indexdata
+			              where index_id = 2060011 and "UID" IN
+			                    (select "UID" from mgt_system
+			                      where use_flag = '1'
+			                        and "ID" in 
+			                        (select sys_id from mgt_system_device
+			                         where use_flag = '1' and dev_id in 
+			                         <foreach index="index" item="item" collection="ids" open="(" separator="," close=")">
+					                   		#{item}
+					                 </foreach>
+			                         )
+			                     )
+			              )
+	</select>
+	
+	<select id="searchTaskInfo" resultType="java.util.Map">
+	 	   select id,task_step_id,task_step_desc,task_step_state,task_step_costtime,
+		        case task_step_state
+		          when 1 then 'init'
+		          when 2 then 'running'
+		          when 3 then 'success'
+		          when 4 then 'fail'
+		          else 'error'
+		        end as task_step_statename,
+		        to_char(task_step_createtime, 'yyyy-mm-dd hh24:mi') as task_step_createtime
+		   from task_step_value
+		  where task_step_id =
+		        (select task_opera_id from task_operation_value aa
+		          where task_opera_lastTime =
+		                (select max(task_opera_lastTime) from task_operation_value
+		                  where task_opera_uid = aa.task_opera_uid)
+		            and task_opera_uid = 
+		                               (select "UID" from mgt_double
+		                                   where use_flag = '1' and "ID" = #{double_id}
+		                                   and rownum = 1)
+		            and rownum = 1)
+			order by id asc
+	</select>
+	
+	<select id="searchTaskInfos" resultType="java.util.Map">
+	 	   select id,task_step_id,task_step_desc,task_step_state,task_step_costtime,
+		        case task_step_state
+		          when 1 then 'init'
+		          when 2 then 'running'
+		          when 3 then 'success'
+		          when 4 then 'fail'
+		          else 'error'
+		        end as task_step_statename,
+		        to_char(task_step_createtime, 'yyyy-mm-dd hh24:mi') as task_step_createtime
+		   from task_step_value
+		   where task_step_id =
+		        (select task_opera_id from task_operation_value aa
+		          where task_opera_lastTime =
+		                (select max(task_opera_lastTime) from task_operation_value
+		                  where task_opera_uid = aa.task_opera_uid)
+		            and task_opera_uid = 
+		                               (select "UID" from mgt_double
+		                                   where use_flag = '1' and "ID" = #{double_id}
+		                                   and rownum = 1)
+		            and rownum = 1)
+		         and task_step_state in (3,4,5)
+	</select>
+
+	<select id="getDatebase" parameterType="doublemonPo" resultType="doublemonPo">
+	    select mc.core, ms.name, ms."UID" from mgt_double md 
+		left join mgt_core mc on md.id = mc.double_id and mc.use_flag = '1'
+		<if test="po.core_tagging != null and po.core_tagging != ''" >and mc.core_tagging = #{po.core_tagging}</if>
+		left join mgt_core_group mcg on mc.id = mcg.core_id and mcg.use_flag = '1'
+		inner join mgt_group mg on mg.id = mcg.group_id and mg.use_flag = '1'and mg.grotype = 1 
+		left join mgt_group_dev_sys mgd on mgd.group_id = mg.id and mgd.use_flag = '1'
+		left join mgt_device mde on mde.id = mgd.dev_id and mde.use_flag = '1'
+		left join mgt_system_device msd on msd.dev_id = mde.id and msd.use_flag = '1'
+		left join mgt_system ms on ms.id = msd.sys_id and ms.use_flag = '1'
+		where md.use_flag = '1'
+		<if test="po.position != null and po.position != '' "> and md.position = #{po.position}</if>
+	</select>
+	<select id="getTaskOperation" parameterType="TaskOperation" resultType="TaskOperation">
+	       select * from task_operation_value t
+              where t.task_opera_uid =
+                    (select "UID" from mgt_double
+                      where use_flag = '1'
+                        and "ID" = #{double_id}
+                        and rownum = 1)
+              order by t.task_opera_id desc
+	</select>
+</mapper>
+	

@@ -1,0 +1,1247 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nari.monitormgt.monihome.servers.dao.ServersDao">
+
+	<select id="search" parameterType="DevicesPo"  resultType="DevicesPo">
+	<if test="po.grpcomid!=null and po.grpcomid!=''">
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">
+	        select * from (
+				select mgt_group_dev_sys.group_id,mgt_group_dev_sys.dev_id,mgt_device.ID ,mgt_device."UID",mgt_device.name,mgt_device.in_ip,mgt_device.model_id  from mgt_group_dev_sys 
+				left join mgt_group on mgt_group.id =  mgt_group_dev_sys.group_id
+				INNER join mgt_device on mgt_device.id =  mgt_group_dev_sys.dev_id and mgt_device.use_flag='1'
+				where mgt_group_dev_sys.use_flag = '1') comm
+			left join mgt_model on comm.model_id = mgt_model.id	
+			where 1=1 
+			and comm.group_id = #{po.grpcomid}
+			<if test="po.searchText != null and po.searchText != ''">
+			and comm.name like concat(concat('%',#{po.searchText}),'%')
+		</if>
+	        </when>
+	        <otherwise>
+	        select * from (
+			select mgt_group_dev_sys.group_id,mgt_group_dev_sys.dev_id,mgt_device.ID ,mgt_device.UID,mgt_device.name,mgt_device.in_ip,mgt_device.model_id  from mgt_group_dev_sys 
+			left join mgt_group on mgt_group.id =  mgt_group_dev_sys.group_id
+			INNER join mgt_device on mgt_device.id =  mgt_group_dev_sys.dev_id and mgt_device.use_flag='1'
+			) comm
+			left join mgt_model on comm.model_id = mgt_model.id	
+			where 1=1 
+			and comm.group_id = #{po.grpcomid}
+			<if test="po.searchText != null and po.searchText != ''">
+			and comm.name like concat(concat('%',#{po.searchText}),'%')
+		</if>
+	        </otherwise>
+     	</choose>
+	</if>
+	<if test="po.grpcomid == null || po.grpcomid == ''">
+		<choose>
+	        <when  test="po.DBTYPE =='ORACLE'">
+	        select a1.* from (select DISTINCT mgt_device.*,mon_warn_log.process_status as serverstatus,rownum as rn from mgt_device
+				inner join mon_deviceindex md on md."UID" = mgt_device."UID" and md.use_flag='1' 
+				<if test="po.position != null and po.position != '' ">and md.position = #{po.position}</if>
+				left join mon_warn_log on mon_warn_log.device_id = mgt_device."UID" and mon_warn_log.process_status ='0'    
+				where 1=1     
+				and mgt_device.use_flag = '1'    
+				and mgt_device.devicetype = 1
+				<if test="po.position != null and po.position != '' ">and mgt_device.position = #{po.position}</if>
+				<if test="po.searchText != null and po.searchText != ''">
+				and mgt_device.name like concat(concat('%',#{po.searchText}),'%')
+				</if> ) a1 
+			where rn between #{po.startTotal} and #{po.endTotal}
+	        </when>
+	        <otherwise>
+		    select DISTINCT mgt_device.*,mon_warn_log.process_status as serverstatus from mgt_device 
+			left join mgt_model on mgt_device.model_id = mgt_model.id
+			left join mon_warn_log on mon_warn_log.device_id = mgt_device.uid and mon_warn_log.process_status ='0'
+			where 1=1 
+			and mgt_device.use_flag = '1'
+			and mgt_device.devicetype = 1
+			<if test="po.searchText != null and po.searchText != ''">
+			and mgt_device.name like concat(concat('%',#{po.searchText}),'%')
+			</if>
+			order by mgt_device.id desc
+			limit #{po.pageSize} offset #{po.startTotal}
+	        </otherwise>
+     	</choose>
+	</if>
+	</select>
+	
+	<!-- 新增通过deviceid查询详细信息 -->
+	<select id="searchDetailById" parameterType="DevicesPo"  resultType="DevicesPo">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			select mgt_device.*,mon_warn_log.process_status as serverstatus from mgt_device 
+			left join mon_warn_log on mon_warn_log.device_id = mgt_device."UID"
+			where 1=1 
+			and mgt_device.id = #{po.id}
+			order by mon_warn_log.id desc
+			</when>
+			<otherwise>
+			select mgt_device.*,mon_warn_log.process_status as serverstatus from mgt_device 
+			left join mon_warn_log on mon_warn_log.device_id = mgt_device.uid
+			where 1=1 
+			and mgt_device.id = #{po.id}
+			order by mon_warn_log.id desc
+			</otherwise>
+		</choose>
+	</select>
+	<select id="searchTotal" parameterType="DevicesPo"  resultType="Integer">
+		<if test="po.grpcomid!=null and po.grpcomid!=''">
+			<choose>
+				<when test="po.DBTYPE =='ORACLE'">
+					select count(*) as total  from (
+					select mgt_group_dev_sys.group_id,mgt_group_dev_sys.dev_id,mgt_device.ID ,mgt_device."UID",mgt_device.model_id,mgt_device.name from mgt_group_dev_sys 
+					left join mgt_group on mgt_group.id =  mgt_group_dev_sys.group_id
+					INNER join mgt_device on mgt_device.id =  mgt_group_dev_sys.dev_id and mgt_device.use_flag='1'
+					 ) comm
+					left join mgt_model on comm.model_id = mgt_model.id	
+					where 1=1 and comm.group_id = #{po.grpcomid}
+					<if test="po.searchText != null and po.searchText != ''">
+						and comm.name like concat(concat('%',#{po.searchText}),'%')
+					</if>
+				</when>
+				<otherwise>
+					select count(*) as total  from (
+					select mgt_group_dev_sys.group_id,mgt_group_dev_sys.dev_id,mgt_device.ID ,mgt_device.UID,mgt_device.model_id,mgt_device.name from mgt_group_dev_sys 
+					left join mgt_group on mgt_group.id =  mgt_group_dev_sys.group_id
+					INNER join mgt_device on mgt_device.id =  mgt_group_dev_sys.dev_id and mgt_device.use_flag='1'
+					 ) comm
+					left join mgt_model on comm.model_id = mgt_model.id	
+					where 1=1 and comm.group_id = #{po.grpcomid}
+					<if test="po.searchText != null and po.searchText != ''">
+						and comm.name like concat(concat('%',#{po.searchText}),'%')
+					</if>
+				</otherwise>
+			</choose>
+		</if>
+		<if test="po.grpcomid == null || po.grpcomid == ''">
+			select count(*) as total from mon_deviceindex md
+			left join mgt_device m on m."UID" = md."UID" 
+			and m.position='0' and m.use_flag = '1'
+			where 1=1 and md.use_flag='1' 
+			<if test="po.position != null and po.position != '' ">and md.position = #{po.position}</if>
+			<if test="po.searchText != null and po.searchText != ''">
+			and m.name like concat(concat('%',#{po.searchText}),'%')
+			</if>
+		</if>
+	</select>
+	
+	<select id="searchList" parameterType="DevicesPo"  resultType="DevicesPo">	
+		<if test="po.grpcomid!=null and po.grpcomid!=''">
+			select * from (
+				select mgt_group_dev_sys.group_id,mgt_group_dev_sys.dev_id,mgt_device.ID ,mgt_device.UID,mgt_device.model_id  from mgt_group_dev_sys 
+				left join mgt_group on mgt_group.id =  mgt_group_dev_sys.group_id
+				INNER join mgt_device on mgt_device.id =  mgt_group_dev_sys.dev_id
+				) comm
+			left join mgt_model on comm.model_id = mgt_model.id	
+			where 1=1 and comm.group_id = #{po.grpcomid}
+			<if test="po.searchText != null and po.searchText != ''">
+			and comm.name like concat(concat('%',#{po.searchText}),'%')
+			<!-- 	and mgt_model.brand like CONCAT(#{po.searchText},'%') -->
+			</if>
+			order by comm.id desc
+		</if>
+		<if test="po.grpcomid == null || po.grpcomid == ''">
+			select * from mgt_device left join mgt_model on mgt_device.model_id =
+			mgt_model.id
+			where 1=1 and mgt_device.use_flag = '1'
+			and mgt_device.devicetype = 1
+			<if test="po.searchText != null and po.searchText != ''">
+			and mgt_device.name like concat(concat('%',#{po.searchText}),'%')
+		<!-- 	and mgt_model.brand like CONCAT(#{po.searchText},'%') -->
+			</if>
+		order by mgt_device.id desc
+		</if>
+	</select>
+	
+	<select id="searchIndexInfo" parameterType="IndexInfoPo" resultType="IndexInfoPo">
+		select * from mon_indextype
+		left join mon_index on mon_indextype.indextype_id = mon_index.index_type
+		where 1=1
+		and mon_indextype.use_flag ='1'
+ 		and mon_indextype.name =#{po.name}
+	</select>
+	
+	<select id="searchByUid" parameterType="DevicesPo"  resultType="DevicesPo">
+		select * from mgt_device 
+		where 1=1 and mgt_device.use_flag = '1'
+		and mgt_device.parent_id = #{po.uid}
+		<if test="po.devicetype !='' and po.devicetype != null">
+			<if test="po.devicetype != 4">
+			and mgt_device.devicetype = #{po.devicetype}
+			</if>
+			<if test="po.devicetype == 4">
+				and (mgt_device.devicetype = '4' or mgt_device.devicetype='3')
+			</if>
+		</if>
+	</select>
+	<select id="searchSsdNum" parameterType="SsdPo"  resultType="Integer">		
+		select count(*) from mon_indexdata 
+		where 1=1 and mon_indexdata.uid = #{po.uid}
+		and mon_indexdata.index_id in(1070010,1070020,1070030,1070040,1070050,1070060)
+	</select>
+	<select id="searchIbCardNum" parameterType="IbCardPo"  resultType="Integer">		
+		select count(*) from mon_indexdata 
+		where 1=1 and mon_indexdata.uid = #{po.uid}
+		and mon_indexdata.index_id &gt;= 1030009
+		and mon_indexdata.index_id &lt;= 1030016
+	</select>
+	<select id="searchIpCardNum" parameterType="IpCardPo"  resultType="Integer">		
+		select count(*) from mon_indexdata 
+		where 1=1 and mon_indexdata.uid = #{po.uid}
+		and mon_indexdata.index_id &gt;= 1060010
+		and mon_indexdata.index_id &lt;= 1060202
+	</select>
+	<select id="searchSoftInfo" parameterType="DevicesPo"  resultType="SystemmgtPo">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			select * from mgt_system
+			LEFT JOIN mgt_system_device on mgt_system.id = mgt_system_device.sys_id and mgt_system_device.use_flag = '1'
+			LEFT JOIN mgt_device on mgt_system_device.dev_id = mgt_device.id and mgt_device.use_flag = '1'
+			where 1=1
+			and mgt_system.use_flag = '1'
+			and mgt_device."UID" = #{po.uid}
+			</when>
+			<otherwise>
+			select * from mgt_system
+			LEFT JOIN mgt_system_device on mgt_system.id = mgt_system_device.sys_id and mgt_system_device.use_flag = true
+			LEFT JOIN mgt_device on mgt_system_device.dev_id = mgt_device.id and mgt_device.use_flag = true
+			where 1=1
+			and mgt_system.use_flag = true
+			and mgt_device.uid = #{po.uid}
+			</otherwise>
+		</choose>
+	</select>
+	<select id="searchValue" parameterType="IndexDataPo" resultType="IndexDataPo">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			SELECT A.value,
+			(
+			CASE
+			WHEN (b.id IS NULL) THEN 0
+			ELSE 1
+			END
+			) AS iswarn
+			FROM
+			mon_indexdata A
+			LEFT JOIN mon_warn_log b ON (A."UID" = b.device_id AND A.index_id = b.index_id)
+			where A."UID" = #{po.uid} and A.index_id = #{po.index_id}
+			</when>
+			<otherwise>
+			SELECT A."value",
+			(
+			CASE
+			WHEN (b.id IS NULL) THEN 0
+			ELSE 1
+			END
+			) AS iswarn
+			FROM
+			mon_indexdata A
+			LEFT JOIN mon_warn_log b ON (A.uid = b.device_id AND A.index_id = b.index_id)
+			where A.uid = #{po.uid} and A.index_id = #{po.index_id}
+			</otherwise>
+		</choose>
+	</select>
+	<select id="searchssdIndex" parameterType="SsdPo" resultType="SsdPo">
+		SELECT mon_indexdata.index_id from  mon_indexdata WHERE 1=1 
+		and mon_indexdata.uid = #{po.uid}
+		and mon_indexdata.index_id in (1070010,1070020,1070030,1070040,1070050,1070060)
+	</select>
+	<!-- search for ssdCard index item 
+	<select id="searchSsdValue" parameterType="SsdPo" resultType="SsdPo">
+		select 'ssd1' named,
+		max(case index_id when '1070010' then mon_indexdata.value else '' end) osname,
+       max(case index_id when '1070011' then mon_indexdata.value else '' end) health,
+       max(case index_id when '1070012' then mon_indexdata.value else '' end) ssdnum,
+       max(case index_id when '1070013' then mon_indexdata.value else '' end) ssdsn,
+       max(case index_id when '1070014' then mon_indexdata.value else '' end) temps
+		from mon_indexdata where uid = #{po.uid}
+		group by named
+		union 
+		select 'ssd2' named,max(case index_id when '1070020' then mon_indexdata.value else '' end) osname,
+       max(case index_id when '1070021' then mon_indexdata.value else '' end) health,
+       max(case index_id when '1070022' then mon_indexdata.value else '' end) ssdnum,
+       max(case index_id when '1070023' then mon_indexdata.value else '' end) ssdsn,
+       max(case index_id when '1070024' then mon_indexdata.value else '' end) temps
+		from mon_indexdata where index_id in (${po.index_id1}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ssd3' named,max(case index_id when '1070030' then mon_indexdata.value else '' end) osname,
+       max(case index_id when '1070031' then mon_indexdata.value else '' end) health,
+       max(case index_id when '1070032' then mon_indexdata.value else '' end) ssdnum,
+       max(case index_id when '1070033' then mon_indexdata.value else '' end) ssdsn,
+       max(case index_id when '1070034' then mon_indexdata.value else '' end) temps
+		from mon_indexdata where index_id in (${po.index_id2}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ssd4' named,max(case index_id when '1070040' then mon_indexdata.value else '' end) osname,
+       max(case index_id when '1070041' then mon_indexdata.value else '' end) health,
+       max(case index_id when '1070042' then mon_indexdata.value else '' end) ssdnum,
+       max(case index_id when '1070043' then mon_indexdata.value else '' end) ssdsn,
+       max(case index_id when '1070044' then mon_indexdata.value else '' end) temps
+		from mon_indexdata where index_id in (${po.index_id3}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ssd5' named,max(case index_id when '1070050' then mon_indexdata.value else '' end) osname,
+       max(case index_id when '1070051' then mon_indexdata.value else '' end) health,
+       max(case index_id when '1070052' then mon_indexdata.value else '' end) ssdnum,
+       max(case index_id when '1070053' then mon_indexdata.value else '' end) ssdsn,
+       max(case index_id when '1070054' then mon_indexdata.value else '' end) temps
+		from mon_indexdata where index_id in (${po.index_id4}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ssd6' named,max(case index_id when '1070060' then mon_indexdata.value else '' end) osname,
+       max(case index_id when '1070061' then mon_indexdata.value else '' end) health,
+       max(case index_id when '1070062' then mon_indexdata.value else '' end) ssdnum,
+       max(case index_id when '1070063' then mon_indexdata.value else '' end) ssdsn,
+       max(case index_id when '1070064' then mon_indexdata.value else '' end) temps
+		from mon_indexdata where index_id in (${po.index_id5}) and uid = #{po.uid}
+		group by named
+	</select>
+	-->
+	<!-- search for ibCard index item -->
+	<select id="searchIbCardValue" parameterType="IbCardPo" resultType="IbCardPo">
+		select 'ibCard1' named,max(case index_id when '1030005' then mon_indexdata.value else '' end) ibname,
+		max(case index_id when '1030009' then mon_indexdata.value else '' end) gid,
+       max(case index_id when '1030017' then mon_indexdata.value else '' end) ibport,
+       max(case index_id when '1030025' then mon_indexdata.value else '' end) state,
+       max(case index_id when '1030033' then mon_indexdata.value else '' end) physstate,
+       max(case index_id when '1030041' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id},1030005) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ibCard2' named,max(case index_id when '1030005' then mon_indexdata.value else '' end) ibname,
+		max(case index_id when '1030010' then mon_indexdata.value else '' end) gid,
+       max(case index_id when '1030018' then mon_indexdata.value else '' end) ibport,
+       max(case index_id when '1030026' then mon_indexdata.value else '' end) state,
+       max(case index_id when '1030034' then mon_indexdata.value else '' end) physstate,
+       max(case index_id when '1030042' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id1},1030005) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ibCard3' named,max(case index_id when '1030006' then mon_indexdata.value else '' end) ibname,
+		max(case index_id when '1030011' then mon_indexdata.value else '' end) gid,
+       max(case index_id when '1030019' then mon_indexdata.value else '' end) ibport,
+       max(case index_id when '1030027' then mon_indexdata.value else '' end) state,
+       max(case index_id when '1030035' then mon_indexdata.value else '' end) physstate,
+       max(case index_id when '1030043' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id2},1030006) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ibCard4' named,max(case index_id when '1030006' then mon_indexdata.value else '' end) ibname,
+		max(case index_id when '1030012' then mon_indexdata.value else '' end) gid,
+       max(case index_id when '1030020' then mon_indexdata.value else '' end) ibport,
+       max(case index_id when '1030028' then mon_indexdata.value else '' end) state,
+       max(case index_id when '1030036' then mon_indexdata.value else '' end) physstate,
+       max(case index_id when '1030044' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id3},1030006) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ibCard5' named,max(case index_id when '1030007' then mon_indexdata.value else '' end) ibname,
+		max(case index_id when '1030013' then mon_indexdata.value else '' end) gid,
+       max(case index_id when '1030021' then mon_indexdata.value else '' end) ibport,
+       max(case index_id when '1030029' then mon_indexdata.value else '' end) state,
+       max(case index_id when '1030037' then mon_indexdata.value else '' end) physstate,
+       max(case index_id when '1030045' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id4},1030007) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ibCard6' named,max(case index_id when '1030007' then mon_indexdata.value else '' end) ibname,
+		max(case index_id when '1030014' then mon_indexdata.value else '' end) gid,
+       max(case index_id when '1030022' then mon_indexdata.value else '' end) ibport,
+       max(case index_id when '1030030' then mon_indexdata.value else '' end) state,
+       max(case index_id when '1030038' then mon_indexdata.value else '' end) physstate,
+       max(case index_id when '1030046' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id5},1030007) and uid = #{po.uid}
+		group by named
+	</select>
+	
+	<!-- search for ipCard index item -->
+	<select id="searchIpCardValue" parameterType="IpCardPo" resultType="IpCardPo">
+		select 'ipCard1' named,max(case index_id when '1060010' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060011' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060012' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard2' named,max(case index_id when '1060020' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060021' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060022' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id1}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard3' named,max(case index_id when '1060030' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060031' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060032' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id2}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard4' named,max(case index_id when '1060040' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060041' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060042' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id3}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard5' named,max(case index_id when '1060050' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060051' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060052' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id4}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard6' named,max(case index_id when '1060060' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060061' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060062' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id5}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard7' named,max(case index_id when '1060070' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060071' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060072' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id6}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard8' named,max(case index_id when '1060080' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060081' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060082' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id7}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard1' named,max(case index_id when '1060090' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060091' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060092' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id8}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard1' named,max(case index_id when '1060100' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060101' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060102' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id9}) and uid = #{po.uid}
+		group by named
+		union
+		select 'ipCard11' named,max(case index_id when '1060110' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060111' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060112' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id10}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard12' named,max(case index_id when '1060120' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060121' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060122' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id11}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard13' named,max(case index_id when '1060130' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060131' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060132' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id12}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard4' named,max(case index_id when '1060140' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060141' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060142' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id13}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard15' named,max(case index_id when '1060150' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060151' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060152' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id14}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard6' named,max(case index_id when '1060160' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060161' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060162' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id15}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard17' named,max(case index_id when '1060170' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060171' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060172' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id16}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard8' named,max(case index_id when '1060180' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060181' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060182' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id17}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard1' named,max(case index_id when '1060190' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060191' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060192' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id18}) and uid = #{po.uid}
+		group by named
+		union 
+		select 'ipCard1' named,max(case index_id when '1060200' then mon_indexdata.value else '' end) ipport,
+       max(case index_id when '1060201' then mon_indexdata.value else '' end) porttype,
+       max(case index_id when '1060202' then mon_indexdata.value else '' end) rate
+		from mon_indexdata where index_id in (${po.index_id19}) and uid = #{po.uid}
+		group by named
+	</select>
+	
+	<select id="searchDiscValue" parameterType="DiscPo" resultType="DiscPo">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			select 'Disc1' named,max(case index_id when 1050010 then mon_indexdata.value else '' end) osname,
+	       max(case index_id when 1050011 then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when 1050012 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1050013 then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when 1050014 then mon_indexdata.value else '' end) health,
+	       max(case index_id when 1050015 then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when 1050016 then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when 1050017 then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id}) and "UID" = #{po.uid}
+			group by 'Disc1'
+			union 
+			select 'Disc2' named,max(case index_id when 1050020 then mon_indexdata.value else '' end) osname,
+	       max(case index_id when 1050021 then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when 1050022 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1050023 then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when 1050024 then mon_indexdata.value else '' end) health,
+	       max(case index_id when 1050025 then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when 1050026 then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when 1050027 then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id1}) and "UID" = #{po.uid}
+			group by 'Disc1'
+			union 
+			select 'Disc3' named,max(case index_id when 1050030 then mon_indexdata.value else '' end) osname,
+	       max(case index_id when 1050031 then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when 1050032 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1050033 then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when 1050034 then mon_indexdata.value else '' end) health,
+	       max(case index_id when 1050035 then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when 1050036 then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when 1050037 then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id2}) and "UID" = #{po.uid}
+			group by 'Disc1'
+			union 
+			select 'Disc4' named,max(case index_id when 1050040 then mon_indexdata.value else '' end) osname,
+	       max(case index_id when 1050041 then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when 1050042 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1050043 then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when 1050044 then mon_indexdata.value else '' end) health,
+	       max(case index_id when 1050045 then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when 1050046 then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when 1050047 then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id3}) and "UID" = #{po.uid}
+			group by 'Disc1'
+			union 
+			select 'Disc5' named,max(case index_id when 1050050 then mon_indexdata.value else '' end) osname,
+	       max(case index_id when 1050051 then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when 1050052 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1050053 then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when 1050054 then mon_indexdata.value else '' end) health,
+	       max(case index_id when 1050055 then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when 1050056 then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when 1050057 then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id4}) and "UID" = #{po.uid}	 		group by 'Disc1'
+			</when>
+			<otherwise>
+			select 'Disc1' named,max(case index_id when '1050010' then mon_indexdata.value else '' end) osname,
+	       max(case index_id when '1050011' then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when '1050012' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1050013' then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when '1050014' then mon_indexdata.value else '' end) health,
+	       max(case index_id when '1050015' then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when '1050016' then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when '1050017' then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id}) and uid = #{po.uid}
+			group by named
+			union 
+			select 'Disc2' named,max(case index_id when '1050020' then mon_indexdata.value else '' end) osname,
+	       max(case index_id when '1050021' then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when '1050022' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1050023' then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when '1050024' then mon_indexdata.value else '' end) health,
+	       max(case index_id when '1050025' then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when '1050026' then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when '1050027' then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id1}) and uid = #{po.uid}
+			group by named
+			union 
+			select 'Disc3' named,max(case index_id when '1050030' then mon_indexdata.value else '' end) osname,
+	       max(case index_id when '1050031' then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when '1050032' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1050033' then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when '1050034' then mon_indexdata.value else '' end) health,
+	       max(case index_id when '1050035' then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when '1050036' then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when '1050037' then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id2}) and uid = #{po.uid}
+			group by named
+			union 
+			select 'Disc4' named,max(case index_id when '1050040' then mon_indexdata.value else '' end) osname,
+	       max(case index_id when '1050041' then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when '1050042' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1050043' then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when '1050044' then mon_indexdata.value else '' end) health,
+	       max(case index_id when '1050045' then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when '1050046' then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when '1050047' then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id3}) and uid = #{po.uid}
+			group by named
+			union 
+			select 'Disc5' named,max(case index_id when '1050050' then mon_indexdata.value else '' end) osname,
+	       max(case index_id when '1050051' then mon_indexdata.value else '' end) devicetype,
+	       max(case index_id when '1050052' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1050053' then mon_indexdata.value else '' end) trainpro,
+	       max(case index_id when '1050054' then mon_indexdata.value else '' end) health,
+	       max(case index_id when '1050055' then mon_indexdata.value else '' end) currenttemp,
+	       max(case index_id when '1050056' then mon_indexdata.value else '' end) devicetemp,
+	       max(case index_id when '1050057' then mon_indexdata.value else '' end) disk_usage
+			from mon_indexdata where index_id in (${po.index_id4}) and uid = #{po.uid}
+			group by named
+			</otherwise>
+		</choose>
+	</select>
+	<select id="searchDiscNum" parameterType="DiscPo"  resultType="Integer">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			select count(*) from mon_indexdata 
+			where 1=1 and mon_indexdata."UID" = #{po.uid}
+			and mon_indexdata.index_id in (1050010,1050020,1050030,1050040,1050050,1050060)
+			</when>
+			<otherwise>
+			select count(*) from mon_indexdata 
+			where 1=1 and mon_indexdata.uid = #{po.uid}
+			and mon_indexdata.index_id in (1050010,1050020,1050030,1050040,1050050,1050060)
+			</otherwise>
+		</choose>		
+	</select>
+	<select id="searchRaidNum" parameterType="RaiddPo"  resultType="Integer">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			select count(*) from mon_indexdata 
+			where 1=1 and mon_indexdata."UID" = #{po.uid} 
+			and mon_indexdata.index_id in(1040080,1040090,1040100,1040110,1040120,1040130,1040140,1040150,
+			1040160,1040170,1040180,1040190,1040200,1040210,1040220,1040230,1040240,1040250,
+			1040260,1040270,1040280,1040290,1040300,1040310,1040320)
+			</when>
+			<otherwise>
+			select count(*) from mon_indexdata 
+			where 1=1 and mon_indexdata.uid = #{po.uid} 
+			and mon_indexdata.index_id in(1040080,1040090,1040100,1040110,1040120,1040130,1040140,1040150,
+			1040160,1040170,1040180,1040190,1040200,1040210,1040220,1040230,1040240,1040250,
+			1040260,1040270,1040280,1040290,1040300,1040310,1040320)
+			</otherwise>
+		</choose>		
+	</select>
+	<select id="searchRaidLevelNum" parameterType="RaiddPo"  resultType="Integer">
+		select count(*) from mon_indexdata 
+		where 1=1 and mon_indexdata.uid = #{po.uid} 
+		and mon_indexdata.index_id in(1040006,1040012,1040018)
+	</select>
+	<!-- ************************************************************************ -->
+	<!-- search for raidgroup index item -->
+	<select id="searchRaidValue" parameterType="RaiddPo" resultType="RaidInfoPo">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			select 'group1' named,max(case index_id when 1040080 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040081 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040082 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040083 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040084 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040085 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040086 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040087 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040088 then mon_indexdata.value else '' end) sn 
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group1'
+			union 
+			select 'group2' named,max(case index_id when 1040090 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040091 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040092 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040093 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040094 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040095 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040096 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040097 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040098 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group2'
+			union 
+			select 'group3' named,max(case index_id when 1040100 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040101 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040102 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040103 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040104 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040105 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040106 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040107 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040108 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group2'
+			union 
+			select 'group4' named,max(case index_id when 1040110 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040111 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040112 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040113 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040114 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040115 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040116 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040117 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040118 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group4'
+			union 
+			select 'group5' named,max(case index_id when 1040120 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040121 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040122 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040123 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040124 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040125 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040126 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040127 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040128 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group5'
+			union 
+			select 'group6' named,max(case index_id when 1040130 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040131 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040132 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040133 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040134 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040135 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040136 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040137 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040138 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group6'
+			union 
+			select 'group7' named,max(case index_id when 1040140 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040141 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040142 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040143 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040144 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040145 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040146 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040147 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040148 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group7'
+			union 
+			select 'group8' named,max(case index_id when 1040150 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040151 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040152 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040153 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040154 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040155 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040156 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040157 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040158 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group8'
+			union 
+			select 'group9' named,max(case index_id when 1040160 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040161 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040162 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040163 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040164 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040165 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040166 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040167 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040168 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group9'
+			union 
+			select 'group10' named,max(case index_id when 1040170 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040171 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040172 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040173 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040174 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040175 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040176 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040177 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040178 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group10'
+			union
+			select 'group11' named,max(case index_id when 1040180 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040181 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040182 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040183 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040184 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040185 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040186 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040187 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040188 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group11'
+			union 
+			select 'group12' named,max(case index_id when 1040190 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040191 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040192 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040193 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040194 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040195 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040196 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040197 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040198 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group12'
+			union 
+			select 'group13' named,max(case index_id when 1040200 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040201 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040202 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040203 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040204 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040205 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040206 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040207 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040208 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group13'
+			union 
+			select 'group14' named,max(case index_id when 1040210 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040211 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040212 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040213 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040214 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040215 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040216 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040217 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040218 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group14'
+			union 
+			select 'group15' named,max(case index_id when 1040220 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040221 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040222 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040223 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040224 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040225 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040226 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040227 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040228 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group15'
+			union 
+			select 'group16' named,max(case index_id when 1040230 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040231 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040232 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040233 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040234 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040235 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040236 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040237 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040238 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group16'
+			union 
+			select 'group17' named,max(case index_id when 1040240 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040241 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040242 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040243 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040244 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040245 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040246 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040247 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040248 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group17'
+			union 
+			select 'group18' named,max(case index_id when 1040250 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040251 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040252 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040253 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040254 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040255 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040256 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040257 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040258 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where "UID" = #{po.uid}
+			group by 'group18'
+			union 
+			select 'group19' named,max(case index_id when 1040260 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040261 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040262 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040263 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040264 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040265 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040266 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040267 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040268 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group19'
+			union 
+			select 'group20' named,max(case index_id when 1040270 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040271 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040272 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040273 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040274 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040275 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040276 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040277 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040278 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group20'
+			union
+			select 'group21' named,max(case index_id when 1040280 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040281 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040282 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040283 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040284 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040285 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040286 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040287 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040288 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group21'
+			union 
+			select 'group22' named,max(case index_id when 1040290 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040291 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040292 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040293 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040294 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040295 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040296 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040297 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040298 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group22'
+			union 
+			select 'group23' named,max(case index_id when 1040300 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040301 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040302 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040303 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040304 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040305 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040306 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040307 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040308 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group23'
+			union 
+			select 'group24' named,max(case index_id when 1040310 then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when 1040311 then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when 1040312 then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when 1040313 then mon_indexdata.value else '' end) state,
+		   max(case index_id when 1040314 then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when 1040315 then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when 1040316 then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when 1040317 then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when 1040318 then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  "UID" = #{po.uid}
+			group by 'group24'
+			</when>
+			<otherwise>
+			select 'group1' named,max(case index_id when '1040080' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040081' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040082' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040083' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040084' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040085' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040086' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040087' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040088' then mon_indexdata.value else '' end) sn 
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group2' named,max(case index_id when '1040090' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040091' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040092' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040093' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040094' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040095' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040096' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040097' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040098' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group3' named,max(case index_id when '1040100' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040101' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040102' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040103' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040104' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040105' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040106' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040107' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040108' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group4' named,max(case index_id when '1040110' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040111' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040112' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040113' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040114' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040115' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040116' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040117' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040118' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group5' named,max(case index_id when '1040120' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040121' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040122' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040123' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040124' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040125' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040126' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040127' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040128' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group6' named,max(case index_id when '1040130' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040131' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040132' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040133' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040134' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040135' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040136' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040137' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040138' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group7' named,max(case index_id when '1040140' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040141' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040142' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040143' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040144' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040145' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040146' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040147' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040148' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group8' named,max(case index_id when '1040150' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040151' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040152' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040153' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040154' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040155' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040156' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040157' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040158' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group9' named,max(case index_id when '1040160' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040161' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040162' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040163' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040164' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040165' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040166' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040167' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040168' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group10' named,max(case index_id when '1040170' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040171' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040172' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040173' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040174' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040175' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040176' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040177' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040178' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union
+			select 'group11' named,max(case index_id when '1040180' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040181' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040182' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040183' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040184' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040185' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040186' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040187' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040188' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group12' named,max(case index_id when '1040190' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040191' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040192' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040193' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040194' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040195' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040196' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040197' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040198' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group13' named,max(case index_id when '1040200' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040201' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040202' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040203' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040204' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040205' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040206' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040207' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040208' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group14' named,max(case index_id when '1040210' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040211' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040212' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040213' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040214' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040215' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040216' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040217' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040218' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group15' named,max(case index_id when '1040220' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040221' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040222' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040223' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040224' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040225' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040226' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040227' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040228' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group16' named,max(case index_id when '1040230' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040231' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040232' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040233' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040234' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040235' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040236' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040237' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040238' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group17' named,max(case index_id when '1040240' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040241' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040242' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040243' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040244' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040245' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040246' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040247' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040248' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group18' named,max(case index_id when '1040250' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040251' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040252' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040253' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040254' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040255' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040256' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040257' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040258' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where uid = #{po.uid}
+			group by named
+			union 
+			select 'group19' named,max(case index_id when '1040260' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040261' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040262' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040263' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040264' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040265' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040266' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040267' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040268' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group20' named,max(case index_id when '1040270' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040271' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040272' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040273' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040274' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040275' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040276' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040277' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040278' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union
+			select 'group21' named,max(case index_id when '1040280' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040281' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040282' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040283' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040284' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040285' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040286' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040287' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040288' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group22' named,max(case index_id when '1040290' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040291' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040292' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040293' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040294' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040295' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040296' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040297' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040298' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group23' named,max(case index_id when '1040300' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040301' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040302' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040303' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040304' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040305' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040306' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040307' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040308' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			union 
+			select 'group24' named,max(case index_id when '1040310' then mon_indexdata.value else '' end) mapped_device,
+	       max(case index_id when '1040311' then mon_indexdata.value else '' end) raid_level,
+	       max(case index_id when '1040312' then mon_indexdata.value else '' end) os_name,
+	       max(case index_id when '1040313' then mon_indexdata.value else '' end) state,
+		   max(case index_id when '1040314' then mon_indexdata.value else '' end) solt_num,
+	       max(case index_id when '1040315' then mon_indexdata.value else '' end) solttype,
+	       max(case index_id when '1040316' then mon_indexdata.value else '' end) capacity,
+	       max(case index_id when '1040317' then mon_indexdata.value else '' end) health_score,
+	       max(case index_id when '1040318' then mon_indexdata.value else '' end) sn
+			from mon_indexdata where  uid = #{po.uid}
+			group by named
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="searchMapValue" parameterType="String"  resultType="String">
+		select mon_indexdata.value from mon_indexdata 
+		where 1=1 and mon_indexdata.uid = #{uid} 
+		and mon_indexdata.index_id in(1040006,1040012,1040018,1040024,1040030,1040036,1040042,1040048,1040054,1040060,1040066)
+	</select>
+	
+	<select id="getIndexByUidIndexType" parameterType="IndexDataPo"  resultType="IndexDataPo">
+		<choose>
+			<when test="po.DBTYPE =='ORACLE'">
+			select b.index_type, b.description, b.remark, a.index_id, a."UID", a.value
+			from mon_indexdata a
+			left join mon_index b on a.index_id = b.index_id
+			where a."UID" = #{po.uid}
+			and b.index_type = #{po.index_type}
+			order by a.index_id
+			</when>
+			<otherwise>
+			select b.index_type, b.description, b.remark, a.index_id, a.uid, a."value"
+			from mon_indexdata a
+			left join mon_index b on a.index_id = b.index_id
+			where a.uid = #{po.uid}
+			and b.index_type = #{po.index_type}
+			order by a.index_id
+			</otherwise>
+		</choose>
+	</select>	
+	
+</mapper>

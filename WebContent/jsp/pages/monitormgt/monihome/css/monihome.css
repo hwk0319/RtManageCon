@@ -1,0 +1,163 @@
+html,body{
+	margin:0px;
+	padding:0px;
+	width:100%;
+	height:100%;
+	min-height:200px;
+	overflow:hidden;
+	background:-webkit-gradient(linear, 0% 100%, 0% 0%,from(#3c8dbc), to(#f6f6f8));
+}
+.nav{
+	width:100%;
+	height:100%;
+	text-align:center;
+}
+.title{
+	width:90%;
+	height:15%;
+	margin-left:5%;
+	margin-top: 5%;
+}
+.title .title_ch{
+	width:100%;
+	height:45%;
+	text-align:center;
+	margin-top:10px;
+	font-size:26px;
+	font-weight:bold;
+	float:left;
+}
+.hardware{	
+	width:68%;
+	height:38%;
+	padding-left:4%;
+	margin-left:16%;
+	margin-top:2%;
+	border-radius:5px;
+	background:-webkit-gradient(linear, 0% 100%, 0% 0%,from(#a2c8de), to(#d1e2ec));
+	background: -ms-linear-gradient(top,#d1e2ec 0%,#a2c8de 100%); /*IE*/
+}
+.server{
+	margin:1% 2%;
+	width:20%;
+	height:85%;
+	float:left;
+	position:relative;
+}
+.active-active{
+	margin:1% 2%;
+	width:20%;
+	height:85%;
+	float:left;
+	position:relative;
+}
+.cluster{
+	margin:1% 2%;
+	width:20%;
+	height:85%;
+	float:left;
+	position:relative;
+}
+.oracledb{
+	margin:1% 2%;
+	width:20%;
+	height:85%;
+	float:left;
+	position:relative;
+}
+.info{
+	width:100%;
+	height:10%;
+}
+.info .error{
+	width:20px;
+	height:20px;
+	position:absolute;
+	right:0px;
+	top:10px;
+	border-radius:10px;
+	border:1px solid #000;
+	font-size:14px;
+	color:#fff;
+	line-height:20px;
+}
+.server .log,.active-active .log,.cluster .log,.oracledb .log{
+	margin-left:5%;
+	width:90%;
+	height:70%;
+	background:#44b0cd;
+	border-radius:5px;
+}
+.log img{
+	margin-top:25%;
+	width: 50%;
+    height: 50%;
+}
+.txt{
+	/* margin-left: 10%;
+    margin-top: 15%; */
+	width:80%;
+	height:20%;
+	margin:10%;
+	font-size:18px;
+	font-weight:bold;
+	color:#000;
+	text-align:center;
+	display:block;
+}
+.software{	
+	width:72%;
+	height:26%;
+	margin-left:16%;
+	margin-top:2%;
+	border-radius:5px;
+	background:-webkit-gradient(linear, 0% 100%, 0% 0%,from(#8fbdd7), to(#a9cce0));
+	/* background-color:#CDDFED; */
+}
+.softlist{
+	width:70%;
+	height:100%;
+	margin-left:15%;
+}
+.soft-db,.soft-filesys,.soft-backupsys{
+	width:30%;
+	height:90%;
+	margin-left:2%;
+	margin-top:1%;
+	float:left;
+}
+.imgg{
+	width:100%;
+	height:60%;
+}
+.imgg img{
+	margin-top:40%;
+	width: 70%;
+    height: 80%;
+}
+.softxt{
+	width:100%;
+	height:20%;
+	margin-top:5%;
+	font-size:18px;
+	font-weight:bold;
+}
+.server:hover,.active-active:hover,.cluster:hover,.oracledb:hover,
+.soft-db:hover,.soft-filesys:hover,.soft-backupsys:hover{
+	transform:scale(1.05,1.05);
+	cursor:pointer;
+}
+.slog{
+	margin-left:20px;
+	width:80%;
+	height:120px;
+	border:1px solid #fff;
+}
+.box-shadow{
+	-webkit-box-shadow:10px 10px 5px #888888;;
+	   -moz-box-shadow:10px 10px 5px #888888;;
+		   -box-shadow:10px 10px 5px #888888;;
+}
+div{
+	position:relative;
+}
